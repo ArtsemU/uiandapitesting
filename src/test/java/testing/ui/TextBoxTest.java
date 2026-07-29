@@ -2,6 +2,7 @@ package testing.ui;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 import ui.steps.TextBoxSteps;
 
@@ -13,7 +14,8 @@ public class TextBoxTest extends BaseUITest{
         tbSteps.openTBPage();
         tbSteps.fillFullName("John Doue");
         tbSteps.submitForm();
-        tbSteps.getFullName();
+        String result = tbSteps.getFullName();
+        Assert.assertEquals(result, "John Doue", "Full name mismatch");
     }
 
 }
