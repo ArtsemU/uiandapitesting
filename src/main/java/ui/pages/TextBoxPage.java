@@ -32,8 +32,8 @@ public class TextBoxPage extends BasePage{
     // output
     private final By outputName             = By.id("name");
     private final By outputEmail            = By.id("email");
-    private final By outputCurrentAddress   = By.id("currentAddress");
-    private final By outputPermanentAddress = By.id("permanentAddress");
+    private final By outputCurrentAddress   = By.xpath("//p[@id='currentAddress']");
+    private final By outputPermanentAddress = By.xpath("//p[@id='permanentAddress']");
 
     // methods
     public void enterFullName(String name) {

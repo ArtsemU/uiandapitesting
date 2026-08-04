@@ -25,17 +25,52 @@ public class TextBoxSteps extends BaseSteps{
         textBoxPage.enterFullName(name);
     }
 
+    public void fillEmail(String email) {
+        log.info("enter Email : {}", email);
+        textBoxPage.enterEmail(email);
+    }
+
+    public void fillCurrAddress(String curAddress) {
+        log.info("enter currAddress : {}", curAddress);
+        textBoxPage.enterCurrentAddress(curAddress);
+    }
+
+    public void fillPerAddress(String perAddress) {
+        log.info("enter currAddress : {}", perAddress);
+        textBoxPage.enterPermanentAddress(perAddress);
+    }
+
     public void submitForm() {
         textBoxPage.clickSubmitButton();
     }
 
-    public String getFullName() {
+    public String getOutputName() {
         String value = textBoxPage.getFullName();
         String name = value.split(":")[1];
         log.info("Got full name : {}", name);
         return name;
     }
 
+    public String getOutputEmail() {
+        String value = textBoxPage.getEmail();
+        String email = value.split(":")[1];
+        log.info("Got Email : {}", email);
+        return email;
+    }
 
+    public String getOutputCurrAddress() {
+        String value = textBoxPage.getCurrentAddress();
+        log.info("Value : {}", value);
+        String currAddress = value.split(":")[1];
+        log.info("Got CurrAddress : {}", currAddress);
+        return currAddress;
+    }
+
+    public String getOutputPerAddress() {
+        String value = textBoxPage.getPermanentAddress();
+        String perAddress = value.split(":")[1];
+        log.info("Got perAddress : {}", perAddress);
+        return perAddress;
+    }
 
 }
