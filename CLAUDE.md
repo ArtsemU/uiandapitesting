@@ -32,3 +32,45 @@ When adding a new page under test, follow the existing pattern: add a `<Foo>Page
 ## Logging
 
 Log4j2 config is at `src/test/resources/log4j2.xml` — console-only appender with a colorized pattern (a commented-out file appender is available if file logging is ever needed). Loggers are obtained per-class via SLF4J (`LoggerFactory.getLogger(...)`), following the pattern already used in `WebDriverFactory`, `TextBoxPage`, `TextBoxSteps`, and the test classes.
+
+## Conventions
+
+- Locators: every locator uses By.xpath(). Nothing else — not By.id,
+  not By.className, not By.cssSelector, not By.name, not By.tagName.
+  Chosen for uniformity, see docs/decisions/0001-xpath-for-all-locators.md.
+- Always scope locators to a container. demoQA reuses the same id in the
+  form and in the output block.
+- Every test carries `@Test(description = "XX-000: short description")`.
+  XX is a two-letter module prefix (TB = Text Box, CB = Check Box),
+  000 is a three-digit number within that module.
+  Keep the description under ~60 characters — it must stay readable on one line.
+- Test IDs are never reused, even after a test is deleted.
+
+## Package layout
+
+src/main/java
+- factory    — WebDriverFactory, Browser enum
+- ui.pages   — page objects, extend BasePage
+- ui.steps   — step layer, extends BaseSteps
+
+src/test/java
+- testing.ui       — test classes, extend BaseUITest
+- testing.testdata — test data constants, one class per module,
+  named <Module>TestData
+
+Test data classes never live in the test package.
+
+## Assertions
+
+- Every assertion carries a failure message as the third argument.
+  The message states which behaviour is broken, not the values —
+  assertEquals already prints expected and actual.
+- Constants holding values read from the page under test are named
+  EXPECTED_OUTPUT_<SCOPE>. The name must make clear these are the
+  application's internal values, not the labels shown in the UI.
+
+## Git
+
+- Never write to git: no branches, no commits, no stashing, no push,
+  no pull requests. Branching and PRs are handled manually.
+- Reading is fine and encouraged: git status, git diff, git log.

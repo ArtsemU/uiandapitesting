@@ -27,11 +27,11 @@ public class TextBoxPage extends BasePage{
 
     // button
     private final By submitButton =
-            By.id("submit");
+            By.xpath("//*[@id='submit']");
 
     // output
-    private final By outputName             = By.id("name");
-    private final By outputEmail            = By.id("email");
+    private final By outputName             = By.xpath("//*[@id='name']");
+    private final By outputEmail            = By.xpath("//*[@id='email']");
     private final By outputCurrentAddress   = By.xpath("//p[@id='currentAddress']");
     private final By outputPermanentAddress = By.xpath("//p[@id='permanentAddress']");
 
