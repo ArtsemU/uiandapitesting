@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
+import ui.steps.CheckBoxSteps;
 import ui.steps.TextBoxSteps;
 
 public class BaseUITest {
@@ -14,6 +15,7 @@ public class BaseUITest {
     protected WebDriver driver;
 
     TextBoxSteps tbSteps;
+    CheckBoxSteps cbSteps;
 
     @BeforeMethod
     public void setUp() {
@@ -21,6 +23,7 @@ public class BaseUITest {
         driver = WebDriverFactory.createDriver(WebDriverFactory.Browser.CHROME);
         driver.manage().window().maximize();
         tbSteps = new TextBoxSteps(driver);
+        cbSteps = new CheckBoxSteps(driver);
         log.info("Browser started");
     }
 
