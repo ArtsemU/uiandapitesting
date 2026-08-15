@@ -48,6 +48,16 @@ public final class WebTableRecord {
         return new Builder();
     }
 
+    public Builder toBuilder() {
+        return builder()
+                .firstName(firstName)
+                .lastName(lastName)
+                .email(email)
+                .age(age)
+                .salary(salary)
+                .department(department);
+    }
+
     public static WebTableRecord unique(int index) {
         return builder()
                 .firstName("Marta" + index)

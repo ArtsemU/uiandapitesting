@@ -1,6 +1,7 @@
 package ui.pages;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.slf4j.Logger;
@@ -24,6 +25,8 @@ public class WebTablesPage extends BasePage {
 
     private final By addButton = By.xpath(".//button[@id='addNewRecordButton']");
     private final By rows = By.xpath(".//table/tbody/tr");
+    private final By editIcon = By.xpath(".//span[@title='Edit']");
+    private final By searchBoxField = By.xpath(".//input[@id='searchBox']");
 
     // modal form fields
     private final By firstNameField = By.xpath(".//input[@id='firstName']");
@@ -33,6 +36,7 @@ public class WebTablesPage extends BasePage {
     private final By salaryField    = By.xpath(".//input[@id='salary']");
     private final By departmentField = By.xpath(".//input[@id='department']");
     private final By submitButton   = By.xpath(".//button[@id='submit']");
+    private final By closeButton    = By.xpath(".//button[contains(concat(' ', normalize-space(@class), ' '), ' btn-close ')]");
 
     // single source of truth for table column positions (1-based, matches td[n])
     private enum Column {
@@ -85,26 +89,76 @@ public class WebTablesPage extends BasePage {
                 .build();
     }
 
-    public void clickAddButton() {
+    public void openAddForm() {
         WebElement table = driver.findElement(tableContainer);
         click(table.findElement(addButton));
     }
 
-    public void submitRecordForm(WebTableRecord record) {
+    public void clickEditForRow(String email) {
+        WebElement table = driver.findElement(tableContainer);
+        List<WebElement> matches = table.findElements(rowByEmail(email));
+        if (matches.size() != 1) {
+            throw new IllegalStateException(
+                    "Expected exactly one record with email '" + email + "' to edit, found " + matches.size());
+        }
+        click(matches.get(0).findElement(editIcon));
+    }
+
+    // the edit modal opens pre-filled; clearing via keyboard rather than
+    // WebElement.clear() so React's input state tracker actually registers
+    // the field as empty before sendKeys types the new value
+    private void clearField(WebElement element) {
+        click(element);
+        element.sendKeys(Keys.chord(Keys.CONTROL, "a"));
+        element.sendKeys(Keys.DELETE);
+    }
+
+    public void fillRecordForm(WebTableRecord record) {
         WebElement modal = driver.findElement(modalContainer);
-        sendKeys(modal.findElement(firstNameField), record.getFirstName());
-        sendKeys(modal.findElement(lastNameField), record.getLastName());
-        sendKeys(modal.findElement(emailField), record.getEmail());
-        sendKeys(modal.findElement(ageField), String.valueOf(record.getAge()));
-        sendKeys(modal.findElement(salaryField), String.valueOf(record.getSalary()));
-        sendKeys(modal.findElement(departmentField), record.getDepartment());
+
+        WebElement firstName = modal.findElement(firstNameField);
+        clearField(firstName);
+        sendKeys(firstName, record.getFirstName());
+
+        WebElement lastName = modal.findElement(lastNameField);
+        clearField(lastName);
+        sendKeys(lastName, record.getLastName());
+
+        WebElement email = modal.findElement(emailField);
+        clearField(email);
+        sendKeys(email, record.getEmail());
+
+        WebElement age = modal.findElement(ageField);
+        clearField(age);
+        sendKeys(age, String.valueOf(record.getAge()));
+
+        WebElement salary = modal.findElement(salaryField);
+        clearField(salary);
+        sendKeys(salary, String.valueOf(record.getSalary()));
+
+        WebElement department = modal.findElement(departmentField);
+        clearField(department);
+        sendKeys(department, record.getDepartment());
+    }
+
+    public void clickSubmit() {
+        WebElement modal = driver.findElement(modalContainer);
         click(modal.findElement(submitButton));
+    }
+
+    public void clickClose() {
+        WebElement modal = driver.findElement(modalContainer);
+        click(modal.findElement(closeButton));
     }
 
     public WebTableRecord getRecordByEmail(String email) {
         WebElement table = driver.findElement(tableContainer);
-        WebElement row = table.findElement(rowByEmail(email));
-        return readRecord(row);
+        List<WebElement> matches = table.findElements(rowByEmail(email));
+        if (matches.size() != 1) {
+            throw new IllegalStateException(
+                    "Expected exactly one record with email '" + email + "', found " + matches.size());
+        }
+        return readRecord(matches.get(0));
     }
 
     public List<WebTableRecord> getAllRecords() {
@@ -115,5 +169,22 @@ public class WebTablesPage extends BasePage {
             records.add(readRecord(row));
         }
         return records;
+    }
+
+    public int getRecordCount() {
+        WebElement table = driver.findElement(tableContainer);
+        return table.findElements(rows).size();
+    }
+
+    public void enterFilter(String value) {
+        WebElement table = driver.findElement(tableContainer);
+        WebElement search = table.findElement(searchBoxField);
+        clearField(search);
+        sendKeys(search, value);
+    }
+
+    public void clearFilter() {
+        WebElement table = driver.findElement(tableContainer);
+        clearField(table.findElement(searchBoxField));
     }
 }
