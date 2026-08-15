@@ -17,10 +17,6 @@ and Web Tables.
 - Compile: `mvn compile`
 - Run tests: `mvn test` — runs the suite defined in `testng.xml` at the project
   root, wired through `maven-surefire-plugin`.
-  - **Known gap:** the full suite currently reports failures under `mvn test`
-    while individual classes pass when run from the IDE. Cause not yet
-    identified — check `target/surefire-reports` for the failing class and
-    message before assuming your change caused it.
 - Run a single class from the IDE: use the TestNG run configuration for the
   class (e.g. `TextBoxTest`).
 - Run a single class from the CLI: `mvn test -Dtest=TextBoxTest`.
@@ -49,9 +45,9 @@ Steps only, never Pages directly.
   Pages and steps accept and return these directly.
 - `testing.ui.BaseUITest` — TestNG base test class. `@BeforeMethod` creates a
   Chrome `WebDriver`, maximizes the window, and instantiates the relevant `*Steps`
-  objects as fields for subclasses. `@AfterMethod` is meant to quit the driver,
-  but `driver.quit()` is currently commented out so the browser stays open after a
-  run. This is a known gap, not a design decision.
+  objects as fields for subclasses. `@AfterMethod` does not quit the driver — `driver.quit()` is commented out
+  on purpose so the browser stays open for inspection after a run.
+  Do not uncomment it.
 - Test classes under `src/test/java/testing/ui` extend `BaseUITest`, call only
   `*Steps` methods, and assert with TestNG `Assert` or `SoftAssert`.
 
