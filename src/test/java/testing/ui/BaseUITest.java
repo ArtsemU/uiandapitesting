@@ -8,6 +8,7 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import ui.steps.CheckBoxSteps;
 import ui.steps.TextBoxSteps;
+import ui.steps.WebTablesSteps;
 
 public class BaseUITest {
     private static final Logger log = LoggerFactory.getLogger(BaseUITest.class);
@@ -16,6 +17,7 @@ public class BaseUITest {
 
     TextBoxSteps tbSteps;
     CheckBoxSteps cbSteps;
+    WebTablesSteps wtSteps;
 
     @BeforeMethod
     public void setUp() {
@@ -24,6 +26,7 @@ public class BaseUITest {
         driver.manage().window().maximize();
         tbSteps = new TextBoxSteps(driver);
         cbSteps = new CheckBoxSteps(driver);
+        wtSteps = new WebTablesSteps(driver);
         log.info("Browser started");
     }
 
