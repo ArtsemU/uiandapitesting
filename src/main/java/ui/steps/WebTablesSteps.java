@@ -66,15 +66,15 @@ public class WebTablesSteps extends BaseSteps {
         return record;
     }
 
-    public List<WebTableRecord> getAllRecords() {
-        List<WebTableRecord> records = webTablesPage.getAllRecords();
-        log.info("Got {} records", records.size());
+    public List<WebTableRecord> getRecordsOnCurrentPage() {
+        List<WebTableRecord> records = webTablesPage.getRecordsOnCurrentPage();
+        log.info("Got {} records on current page", records.size());
         return records;
     }
 
-    public int getRecordCount() {
-        int count = webTablesPage.getRecordCount();
-        log.info("Record count: {}", count);
+    public int getRecordCountOnCurrentPage() {
+        int count = webTablesPage.getRecordCountOnCurrentPage();
+        log.info("Record count on current page: {}", count);
         return count;
     }
 
@@ -86,5 +86,40 @@ public class WebTablesSteps extends BaseSteps {
     public void clearFilter() {
         log.info("Clearing filter");
         webTablesPage.clearFilter();
+    }
+
+    public int getRowsPerPage() {
+        int rowsPerPage = webTablesPage.getRowsPerPage();
+        log.info("Rows per page: {}", rowsPerPage);
+        return rowsPerPage;
+    }
+
+    public int getCurrentPageNumber() {
+        int page = webTablesPage.getCurrentPageNumber();
+        log.info("Current page: {}", page);
+        return page;
+    }
+
+    public int getTotalPages() {
+        int totalPages = webTablesPage.getTotalPages();
+        log.info("Total pages: {}", totalPages);
+        return totalPages;
+    }
+
+    public void goToNextPage() {
+        log.info("Navigating to next page");
+        webTablesPage.goToNextPage();
+    }
+
+    public void goToPreviousPage() {
+        log.info("Navigating to previous page");
+        webTablesPage.goToPreviousPage();
+    }
+
+    public void addRecords(int count) {
+        log.info("Adding {} records", count);
+        for (int i = 1; i <= count; i++) {
+            addRecord(WebTableRecord.unique(i));
+        }
     }
 }

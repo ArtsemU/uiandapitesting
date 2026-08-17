@@ -143,3 +143,8 @@ Test data classes never live in the same package as the test classes.
 
 - Do not edit CLAUDE.md. If a rule is missing, wrong, or contradicts the code,
   say so and propose the wording — the change is made manually.
+
+## Generated documents
+
+Anything longer than a few lines — overviews, specifications, reports —
+is written to a file under docs/, not printed in the chat.

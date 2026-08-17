@@ -4,6 +4,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.Select;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ui.models.WebTableRecord;
@@ -27,6 +28,13 @@ public class WebTablesPage extends BasePage {
     private final By rows = By.xpath(".//table/tbody/tr");
     private final By editIcon = By.xpath(".//span[@title='Edit']");
     private final By searchBoxField = By.xpath(".//input[@id='searchBox']");
+
+    // pagination bar, scoped like modalContainer above; controls below are scoped inside it
+    private final By paginationContainer = By.xpath(".//div[contains(concat(' ', normalize-space(@class), ' '), ' pagination ')]");
+    private final By rowsPerPageSelect = By.xpath(".//select");
+    private final By pageInfo = By.xpath(".//strong");
+    private final By nextPageButton = By.xpath(".//button[normalize-space(text())='Next']");
+    private final By previousPageButton = By.xpath(".//button[normalize-space(text())='Previous']");
 
     // modal form fields
     private final By firstNameField = By.xpath(".//input[@id='firstName']");
@@ -161,7 +169,7 @@ public class WebTablesPage extends BasePage {
         return readRecord(matches.get(0));
     }
 
-    public List<WebTableRecord> getAllRecords() {
+    public List<WebTableRecord> getRecordsOnCurrentPage() {
         WebElement table = driver.findElement(tableContainer);
         List<WebElement> rowElements = table.findElements(rows);
         List<WebTableRecord> records = new ArrayList<>();
@@ -171,7 +179,7 @@ public class WebTablesPage extends BasePage {
         return records;
     }
 
-    public int getRecordCount() {
+    public int getRecordCountOnCurrentPage() {
         WebElement table = driver.findElement(tableContainer);
         return table.findElements(rows).size();
     }
@@ -186,5 +194,48 @@ public class WebTablesPage extends BasePage {
     public void clearFilter() {
         WebElement table = driver.findElement(tableContainer);
         clearField(table.findElement(searchBoxField));
+    }
+
+    public int getRowsPerPage() {
+        WebElement table = driver.findElement(tableContainer);
+        WebElement pagination = table.findElement(paginationContainer);
+        Select select = new Select(pagination.findElement(rowsPerPageSelect));
+        return Integer.parseInt(select.getFirstSelectedOption().getAttribute("value"));
+    }
+
+    // page info is rendered as a single "<current> of <total>" text node, e.g. "1 of 2"
+    private int[] readPageInfo() {
+        WebElement table = driver.findElement(tableContainer);
+        WebElement pagination = table.findElement(paginationContainer);
+        String text = getText(pagination.findElement(pageInfo));
+        String[] parts = text.split(" of ");
+        if (parts.length != 2) {
+            throw new IllegalStateException("Could not parse page info text: '" + text + "'");
+        }
+        try {
+            return new int[]{Integer.parseInt(parts[0].trim()), Integer.parseInt(parts[1].trim())};
+        } catch (NumberFormatException e) {
+            throw new IllegalStateException("Page info text was not numeric: '" + text + "'", e);
+        }
+    }
+
+    public int getCurrentPageNumber() {
+        return readPageInfo()[0];
+    }
+
+    public int getTotalPages() {
+        return readPageInfo()[1];
+    }
+
+    public void goToNextPage() {
+        WebElement table = driver.findElement(tableContainer);
+        WebElement pagination = table.findElement(paginationContainer);
+        click(pagination.findElement(nextPageButton));
+    }
+
+    public void goToPreviousPage() {
+        WebElement table = driver.findElement(tableContainer);
+        WebElement pagination = table.findElement(paginationContainer);
+        click(pagination.findElement(previousPageButton));
     }
 }

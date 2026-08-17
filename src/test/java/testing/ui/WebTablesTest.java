@@ -16,13 +16,13 @@ public class WebTablesTest extends BaseUITest {
         WebTableRecord record = WebTableRecord.builder().build();
 
         wtSteps.openWebTablesPage();
-        int initialCount = wtSteps.getRecordCount();
+        int initialCount = wtSteps.getRecordCountOnCurrentPage();
         log.info("Initial record count: {}", initialCount);
 
         wtSteps.addRecord(record);
 
         WebTableRecord actual = wtSteps.getRecordByEmail(record.getEmail());
-        int updatedCount = wtSteps.getRecordCount();
+        int updatedCount = wtSteps.getRecordCountOnCurrentPage();
         log.info("Updated record count: {}", updatedCount);
 
         SoftAssert softAssert = new SoftAssert();
@@ -41,13 +41,13 @@ public class WebTablesTest extends BaseUITest {
 
         wtSteps.openWebTablesPage();
         wtSteps.addRecord(original);
-        int countBeforeEdit = wtSteps.getRecordCount();
+        int countBeforeEdit = wtSteps.getRecordCountOnCurrentPage();
         log.info("Record count before edit: {}", countBeforeEdit);
 
         wtSteps.editRecord(original.getEmail(), updated);
 
         WebTableRecord actual = wtSteps.getRecordByEmail(original.getEmail());
-        int updatedCount = wtSteps.getRecordCount();
+        int updatedCount = wtSteps.getRecordCountOnCurrentPage();
         log.info("Updated record count: {}", updatedCount);
 
         SoftAssert softAssert = new SoftAssert();
@@ -66,10 +66,53 @@ public class WebTablesTest extends BaseUITest {
         wtSteps.enterFilter(record.getEmail());
 
         SoftAssert softAssert = new SoftAssert();
-        softAssert.assertEquals(wtSteps.getRecordCount(), 1,
+        softAssert.assertEquals(wtSteps.getRecordCountOnCurrentPage(), 1,
                 "Filtering by an email should leave exactly one row");
-        softAssert.assertEquals(wtSteps.getAllRecords(), List.of(record),
+        softAssert.assertEquals(wtSteps.getRecordsOnCurrentPage(), List.of(record),
                 "The remaining row does not match the record that was added");
+        softAssert.assertAll();
+    }
+
+    @Test(description = "WT-004: table paginates once it exceeds one page")
+    public void tablePaginatesOnceItExceedsOnePage() {
+        wtSteps.openWebTablesPage();
+        int initialCount = wtSteps.getRecordCountOnCurrentPage();
+        log.info("Initial record count: {}", initialCount);
+
+        // 11 exceeds the default page size on its own, so two pages are guaranteed
+        // regardless of how many rows the site ships with by default
+        int recordsToAdd = 11;
+        wtSteps.addRecords(recordsToAdd);
+
+        int rowsPerPage = wtSteps.getRowsPerPage();
+        int expectedTotal = initialCount + recordsToAdd;
+        int expectedPage2Count = expectedTotal - rowsPerPage;
+        log.info("Expected total: {}, rows per page: {}, expected page 2 count: {}",
+                expectedTotal, rowsPerPage, expectedPage2Count);
+
+        SoftAssert softAssert = new SoftAssert();
+        softAssert.assertEquals(wtSteps.getTotalPages(), 2,
+                "Table should span exactly two pages after adding enough records");
+        softAssert.assertEquals(wtSteps.getCurrentPageNumber(), 1,
+                "Table should start on page 1");
+        softAssert.assertEquals(wtSteps.getRecordCountOnCurrentPage(), rowsPerPage,
+                "Page 1 should be full, holding exactly rowsPerPage records");
+
+        List<WebTableRecord> page1Records = wtSteps.getRecordsOnCurrentPage();
+
+        wtSteps.goToNextPage();
+        softAssert.assertEquals(wtSteps.getCurrentPageNumber(), 2,
+                "Next should move the table to page 2");
+        softAssert.assertEquals(wtSteps.getRecordCountOnCurrentPage(), expectedPage2Count,
+                "Page 2 should hold exactly the remaining records");
+        softAssert.assertNotEquals(wtSteps.getRecordsOnCurrentPage(), page1Records,
+                "Page 2 should show different records than page 1");
+
+        wtSteps.goToPreviousPage();
+        softAssert.assertEquals(wtSteps.getCurrentPageNumber(), 1,
+                "Previous should move the table back to page 1");
+        softAssert.assertEquals(wtSteps.getRecordsOnCurrentPage(), page1Records,
+                "Page 1 should show the same records as before navigating away");
         softAssert.assertAll();
     }
 }
