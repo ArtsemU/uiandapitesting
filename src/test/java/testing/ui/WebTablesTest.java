@@ -115,4 +115,25 @@ public class WebTablesTest extends BaseUITest {
                 "Page 1 should show the same records as before navigating away");
         softAssert.assertAll();
     }
+
+    @Test(description = "WT-005: deleting a record removes it from the table")
+    public void deleteRecordRemovesItFromTable() {
+        WebTableRecord record = WebTableRecord.builder().build();
+
+        wtSteps.openWebTablesPage();
+        int initialCount = wtSteps.getRecordCountOnCurrentPage();
+        log.info("Initial record count: {}", initialCount);
+
+        wtSteps.addRecord(record);
+        wtSteps.deleteRecord(record.getEmail());
+
+        List<WebTableRecord> remainingRecords = wtSteps.getRecordsOnCurrentPage();
+        int updatedCount = wtSteps.getRecordCountOnCurrentPage();
+        log.info("Updated record count: {}", updatedCount);
+
+        SoftAssert softAssert = new SoftAssert();
+        softAssert.assertFalse(remainingRecords.contains(record), "Deleted record should no longer appear in the table");
+        softAssert.assertEquals(updatedCount, initialCount, "Row count should match the count recorded before the record was added");
+        softAssert.assertAll();
+    }
 }

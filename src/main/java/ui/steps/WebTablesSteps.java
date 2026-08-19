@@ -60,6 +60,11 @@ public class WebTablesSteps extends BaseSteps {
         clickSubmit();
     }
 
+    public void deleteRecord(String email) {
+        log.info("Deleting record with email: {}", email);
+        webTablesPage.clickDeleteForRow(email);
+    }
+
     public WebTableRecord getRecordByEmail(String email) {
         WebTableRecord record = webTablesPage.getRecordByEmail(email);
         log.info("Got record: {}", record);
