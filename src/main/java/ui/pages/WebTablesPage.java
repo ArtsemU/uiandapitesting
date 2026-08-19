@@ -27,6 +27,7 @@ public class WebTablesPage extends BasePage {
     private final By addButton = By.xpath(".//button[@id='addNewRecordButton']");
     private final By rows = By.xpath(".//table/tbody/tr");
     private final By editIcon = By.xpath(".//span[@title='Edit']");
+    private final By deleteIcon = By.xpath(".//span[@title='Delete']");
     private final By searchBoxField = By.xpath(".//input[@id='searchBox']");
 
     // pagination bar, scoped like modalContainer above; controls below are scoped inside it
@@ -110,6 +111,16 @@ public class WebTablesPage extends BasePage {
                     "Expected exactly one record with email '" + email + "' to edit, found " + matches.size());
         }
         click(matches.get(0).findElement(editIcon));
+    }
+
+    public void clickDeleteForRow(String email) {
+        WebElement table = driver.findElement(tableContainer);
+        List<WebElement> matches = table.findElements(rowByEmail(email));
+        if (matches.size() != 1) {
+            throw new IllegalStateException(
+                    "Expected exactly one record with email '" + email + "' to delete, found " + matches.size());
+        }
+        click(matches.get(0).findElement(deleteIcon));
     }
 
     // the edit modal opens pre-filled; clearing via keyboard rather than
