@@ -144,7 +144,12 @@ Test data classes never live in the same package as the test classes.
 - Do not edit CLAUDE.md. If a rule is missing, wrong, or contradicts the code,
   say so and propose the wording — the change is made manually.
 
-## Generated documents
+## Generated output
 
-Anything longer than a few lines — overviews, specifications, reports —
-is written to a file under docs/, not printed in the chat.
+- Anything longer than a few lines goes to a file, not the chat — unless the
+  prompt explicitly asks for the answer in the chat.
+- One-off analysis, comparisons and audits go to `reports/` as
+  `report_<topic>.md`, with the date it was produced on the first line.
+  These are snapshots, not documentation — they go stale and are deleted
+  once acted on.
+- Documents meant to be kept live in `docs/`.
