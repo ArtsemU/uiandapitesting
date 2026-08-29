@@ -150,6 +150,9 @@ is maintained manually.
 - Every assertion carries a failure message as the third argument. The message
   states which behaviour is broken, not the values — `assertEquals` already prints
   expected and actual.
+- Test case pages follow a Preconditions / Steps / Expected result structure.
+  Checks in the Preconditions block are assertions that must stop the test —
+  use a hard Assert for those.
 
 ### Logging
 

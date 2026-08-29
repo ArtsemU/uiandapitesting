@@ -45,30 +45,25 @@ public class TextBoxSteps extends BaseSteps{
     }
 
     public String getOutputName() {
-        String value = textBoxPage.getFullName();
-        String name = value.split(":")[1];
+        String name = textBoxPage.getFullName();
         log.info("Got full name : {}", name);
         return name;
     }
 
     public String getOutputEmail() {
-        String value = textBoxPage.getEmail();
-        String email = value.split(":")[1];
+        String email = textBoxPage.getEmail();
         log.info("Got Email : {}", email);
         return email;
     }
 
     public String getOutputCurrAddress() {
-        String value = textBoxPage.getCurrentAddress();
-        log.info("Value : {}", value);
-        String currAddress = value.split(":")[1];
+        String currAddress = textBoxPage.getCurrentAddress();
         log.info("Got CurrAddress : {}", currAddress);
         return currAddress;
     }
 
     public String getOutputPerAddress() {
-        String value = textBoxPage.getPermanentAddress();
-        String perAddress = value.split(":")[1];
+        String perAddress = textBoxPage.getPermanentAddress();
         log.info("Got perAddress : {}", perAddress);
         return perAddress;
     }

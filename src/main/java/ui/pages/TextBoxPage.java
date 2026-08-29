@@ -57,20 +57,31 @@ public class TextBoxPage extends BasePage{
         click(driver.findElement(submitButton));
     }
 
+    // demoQA renders each output line as "<Label>:<value>" in one element;
+    // parsing that shape is a page-markup concern, not a domain one
+    private String parseOutputValue(String fieldName, String text) {
+        int separatorIndex = text.indexOf(':');
+        if (separatorIndex < 0) {
+            throw new IllegalStateException(
+                    "Field '" + fieldName + "' output did not contain the expected ':' separator, actual text: '" + text + "'");
+        }
+        return text.substring(separatorIndex + 1).trim();
+    }
+
     // get text methods
     public String getFullName() {
-        return getText(driver.findElement(outputName));
+        return parseOutputValue("Full Name", getText(driver.findElement(outputName)));
     }
 
     public String getEmail() {
-        return getText(driver.findElement(outputEmail));
+        return parseOutputValue("Email", getText(driver.findElement(outputEmail)));
     }
 
     public String getCurrentAddress() {
-        return getText(driver.findElement(outputCurrentAddress));
+        return parseOutputValue("Current Address", getText(driver.findElement(outputCurrentAddress)));
     }
 
     public String getPermanentAddress() {
-        return getText(driver.findElement(outputPermanentAddress));
+        return parseOutputValue("Permanent Address", getText(driver.findElement(outputPermanentAddress)));
     }
 }
