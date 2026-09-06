@@ -41,3 +41,7 @@
 
 - [ ] Browser is hardcoded to `CHROME` in `BaseUITest` though `EDGE` and
   `SAFARI` exist. Wire it to a property or record why not.
+
+- [ ] `api.Config` reads a single `api.properties` with no environment
+  selection. Add a `-Denv` mechanism once a second environment exists;
+  deliberately out of scope while there is only one.
