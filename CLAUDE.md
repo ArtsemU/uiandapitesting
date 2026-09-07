@@ -53,10 +53,15 @@ Tests call Steps only, never Pages directly.
 
 - Objects built through a builder are passed whole. Never unpack them into
   positional parameters at a layer boundary.
-- Page objects return domain objects, not individual cell values, when the caller
-  needs more than one field.
-- Type conversion between the domain type and the string form the DOM uses lives in
-  the page layer only. Steps, tests and models never see the string form.
+- Type conversion between the domain type and the string form the DOM uses lives
+  in the page layer only. Steps, tests and models never see the string form.
+
+**UI only:** page objects return domain objects, not individual cell values,
+when the caller needs more than one field.
+
+**API only:** clients return the raw Response. They do not deserialise and do
+not check status codes — tests assert on the status, and the steps layer
+converts the body to a model.
 
 ### Package layout
 
