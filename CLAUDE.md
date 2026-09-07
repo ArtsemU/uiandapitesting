@@ -182,3 +182,9 @@ ever needed. Loggers are obtained per class via SLF4J
 
 - Do not edit CLAUDE.md. If a rule is missing, wrong, or contradicts the code, say
   so and propose the wording — the change is made manually.
+
+## Dependencies
+
+- Never choose a dependency version from memory. Say which dependency is
+  needed and why, and let me pin the version.
+- Do not add a dependency without saying so explicitly in your summary.
