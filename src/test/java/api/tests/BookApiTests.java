@@ -17,7 +17,7 @@ public class BookApiTests {
     public void addBookToUserE2ETest() {
         log.info("step #0 - generate username and password");
         UserCredentials userCredentials = UserCredentials.unique();
-        log.info("User {} created", userCredentials.getUserName());
+        log.info("Generated credentials for user {}", userCredentials.getUserName());
 
         log.info("Step #1 - call createUser");
         Response rs = apiSteps.createUserCall(userCredentials);
@@ -66,22 +66,22 @@ public class BookApiTests {
 
         log.info("Step #8 - remove book from user");
         Response bookRemoved = apiSteps.removeBook(user.getUserID(), isbn, token.getToken());
-        Assert.assertEquals(bookRemoved.statusCode(), 204, "Expected status : 200");
+        Assert.assertEquals(bookRemoved.statusCode(), 204, "Expected status : 204");
 
         log.info("Step #9 - get user data");
         Response userAfterRemovingBookRs = apiSteps.getUserData(user.getUserID(), token.getToken());
         Assert.assertEquals(userAfterRemovingBookRs.statusCode(), 200, "Expected status : 200");
         UserInfo userAfterRemoving = userAfterRemovingBookRs.as(UserInfo.class);
-        Assert.assertEquals(userAfterRemoving.getBooks().size(), 0, "User should have exactly one book");
+        Assert.assertEquals(userAfterRemoving.getBooks().size(), 0, "User should have no any books");
 
         log.info("Step #10 - remove user");
         Response removeUser = apiSteps.removeUser(user.getUserID(), token.getToken());
-        Assert.assertEquals(removeUser.statusCode(), 204, "Expected status : 200");
+        Assert.assertEquals(removeUser.statusCode(), 204, "Expected status : 204");
 
         log.info("Step #11 - get user");
         Response removedUser = apiSteps.getUserData(user.getUserID(), token.getToken());
         Assert.assertEquals(removedUser.statusCode(), 401, "Expected status : 401");
         ErrorResponse errorResponse = removedUser.as(ErrorResponse.class);
-        Assert.assertEquals(errorResponse.getMessage(), "User not found!", "Error message: User not found!");
+        Assert.assertEquals(errorResponse.getMessage(), "User not found!", "Reading a deleted user should report that the user was not found");
     }
 }

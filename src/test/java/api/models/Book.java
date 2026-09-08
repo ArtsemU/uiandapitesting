@@ -19,15 +19,8 @@ public final class Book {
     private final String website;
 
     public Book(String isbn) {
-        this.isbn = isbn;
-        this.title = null;
-        this.subTitle = null;
-        this.author = null;
-        this.publishDate = null;
-        this.publisher = null;
-        this.pages = 0;
-        this.description = null;
-        this.website = null;
+        this(isbn, null, null, null, null,
+                null, 0, null, null);
     }
 
     @JsonCreator
