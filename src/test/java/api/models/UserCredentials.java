@@ -1,5 +1,7 @@
 package api.models;
 
+import api.Config;
+
 import java.util.Objects;
 
 public final class UserCredentials {
@@ -40,6 +42,17 @@ public final class UserCredentials {
         public UserCredentials build() {
             return new UserCredentials(this);
         }
+    }
+
+    private static String uniqueUserName(String base) {
+        return base + System.currentTimeMillis();
+    }
+
+    public static UserCredentials unique() {
+        return UserCredentials.builder()
+                .userName(uniqueUserName("username_"))
+                .password(Config.userPassword())
+                .build();
     }
 
     @Override
