@@ -18,6 +18,18 @@ public final class Book {
     private final String description;
     private final String website;
 
+    public Book(String isbn) {
+        this.isbn = isbn;
+        this.title = null;
+        this.subTitle = null;
+        this.author = null;
+        this.publishDate = null;
+        this.publisher = null;
+        this.pages = 0;
+        this.description = null;
+        this.website = null;
+    }
+
     @JsonCreator
     public Book(
             @JsonProperty("isbn") String isbn,
