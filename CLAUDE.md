@@ -130,7 +130,7 @@ is maintained manually.
   - `TB` — Text Box
   - `CB` — Check Box
   - `WT` — Web Tables
-  - API areas are not assigned yet.
+  - `BS` — Books Store
 - `000` is a three-digit number within that area.
 - Test IDs are never reused, even after a test is deleted.
 - Temporary or exploratory code is never committed. Delete it once it has served its
@@ -143,6 +143,11 @@ is maintained manually.
 - Constants holding values read from the page under test are named
   `EXPECTED_OUTPUT_<SCOPE>`. The name must make clear these are the application's
   internal values, not the labels shown in the UI.
+- Timestamp-based usernames are an accepted exception to the "no random values"
+  rule for API tests: the demoQA user registry is shared and global across all users of the site, 
+  so a fixed username would eventually collide. 
+  The value itself is never asserted on — only used to avoid collisions — so it does not compromise 
+  determinism of the test's outcome.
 
 ### Assertions
 
