@@ -154,10 +154,10 @@ is maintained manually.
   `EXPECTED_OUTPUT_<SCOPE>`. The name must make clear these are the application's
   internal values, not the labels shown in the UI.
 - Timestamp-based usernames are an accepted exception to the "no random values"
-  rule for API tests: the demoQA user registry is shared and global across all users of the site, 
-  so a fixed username would eventually collide. 
-  The value itself is never asserted on — only used to avoid collisions — so it does not compromise 
-  determinism of the test's outcome.
+  rule for API tests: the demoQA user registry is shared and global across all
+  users of the site, so a fixed username would eventually collide. The value
+  itself is never asserted on — only used to avoid collisions — so it does not
+  compromise determinism of the test's outcome.
 
 ### Assertions
 
@@ -193,9 +193,10 @@ ever needed. Loggers are obtained per class via SLF4J
 
 - Anything longer than a few lines goes to a file, not the chat — unless the prompt
   explicitly asks for the answer in the chat.
-- One-off analysis, comparisons and audits go to `reports/` as `report_<topic>.md`,
-  with the date it was produced on the first line. These are snapshots, not
-  documentation — they go stale and are deleted once acted on.
+- One-off analysis, comparisons and audits go to `reports/` as
+  `report_<topic>_<YYYY-MM-DD-HH-MM>.md`. These are snapshots, not
+  documentation, but are kept rather than deleted — the timestamp in the
+  filename lets multiple reviews of the same topic coexist and be compared.
 - Documents meant to be kept live in `docs/`.
 
 ### This file
