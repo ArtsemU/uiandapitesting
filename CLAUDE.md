@@ -81,6 +81,16 @@ converts the body to a model.
 - `testing.testdata` — constants only, one class per module, named
   `<Module>TestData`
 
+`src/test/java` also holds the API layer:
+
+- `api`         — API clients, one per resource (e.g. `AccountClient`, `BookstoreClient`)
+- `api.models`  — request/response models and builders
+- `api.tests`   — API test classes, named `<Area>ApiTests`
+
+Unlike `ui.models`, `api.models` lives under `src/test/java` rather than
+`src/main/java` — API code has no main-source caller that needs to compile
+against it.
+
 Test data classes never live in the same package as the test classes.
 
 ### Adding a new page under test
