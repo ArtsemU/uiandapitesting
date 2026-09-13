@@ -132,8 +132,11 @@ is maintained manually.
 
 ### Test identifiers
 
-- Every test carries `@Test(description = "XX-000: short description")`. Keep the
-  description under roughly 60 characters so it stays readable on one line.
+- Every test carries `@Test(testName = "XX-000: short description", priority = N)`.
+  Keep the description part under roughly 60 characters so it stays readable on
+  one line. `priority` is the numeric part of the test ID (e.g. `BS-010` →
+  `priority = 10`) — it orders execution within a functional area, not overall
+  importance.
 - `XX` identifies the **functional area**, not the technology. An area keeps its
   prefix whether it is exercised through the UI or the API.
 - Current prefixes:
