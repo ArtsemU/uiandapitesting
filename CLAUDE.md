@@ -81,6 +81,16 @@ converts the body to a model.
 - `testing.testdata` — constants only, one class per module, named
   `<Module>TestData`
 
+`src/test/java` also holds the API layer:
+
+- `api`         — API clients, one per resource (e.g. `AccountClient`, `BookstoreClient`)
+- `api.models`  — request/response models and builders
+- `api.tests`   — API test classes, named `<Area>ApiTests`
+
+Unlike `ui.models`, `api.models` lives under `src/test/java` rather than
+`src/main/java` — API code has no main-source caller that needs to compile
+against it.
+
 Test data classes never live in the same package as the test classes.
 
 ### Adding a new page under test
@@ -122,15 +132,18 @@ is maintained manually.
 
 ### Test identifiers
 
-- Every test carries `@Test(description = "XX-000: short description")`. Keep the
-  description under roughly 60 characters so it stays readable on one line.
+- Every test carries `@Test(priority = N, testName = "XX-000: short description")`.
+  Keep the description part under roughly 60 characters so it stays readable on
+  one line. `priority` is the numeric part of the test ID (e.g. `BS-010` →
+  `priority = 10`) — it orders execution within a functional area, not overall
+  importance.
 - `XX` identifies the **functional area**, not the technology. An area keeps its
   prefix whether it is exercised through the UI or the API.
 - Current prefixes:
   - `TB` — Text Box
   - `CB` — Check Box
   - `WT` — Web Tables
-  - API areas are not assigned yet.
+  - `BS` — Books Store
 - `000` is a three-digit number within that area.
 - Test IDs are never reused, even after a test is deleted.
 - Temporary or exploratory code is never committed. Delete it once it has served its
@@ -143,6 +156,11 @@ is maintained manually.
 - Constants holding values read from the page under test are named
   `EXPECTED_OUTPUT_<SCOPE>`. The name must make clear these are the application's
   internal values, not the labels shown in the UI.
+- Timestamp-based usernames are an accepted exception to the "no random values"
+  rule for API tests: the demoQA user registry is shared and global across all
+  users of the site, so a fixed username would eventually collide. The value
+  itself is never asserted on — only used to avoid collisions — so it does not
+  compromise determinism of the test's outcome.
 
 ### Assertions
 
@@ -178,9 +196,10 @@ ever needed. Loggers are obtained per class via SLF4J
 
 - Anything longer than a few lines goes to a file, not the chat — unless the prompt
   explicitly asks for the answer in the chat.
-- One-off analysis, comparisons and audits go to `reports/` as `report_<topic>.md`,
-  with the date it was produced on the first line. These are snapshots, not
-  documentation — they go stale and are deleted once acted on.
+- One-off analysis, comparisons and audits go to `reports/` as
+  `report_<topic>_<YYYY-MM-DD-HH-MM>.md`. These are snapshots, not
+  documentation, but are kept rather than deleted — the timestamp in the
+  filename lets multiple reviews of the same topic coexist and be compared.
 - Documents meant to be kept live in `docs/`.
 
 ### This file
