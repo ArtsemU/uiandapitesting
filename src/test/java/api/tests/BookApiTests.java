@@ -31,7 +31,7 @@ public class BookApiTests {
         createdUsers.clear();
     }
 
-    @Test(description = "BS-001: Add book to user")
+    @Test(priority = 1, testName = "BS-001: Add book to user")
     public void addBookToUserE2ETest() {
         log.info("step #0 - generate username and password");
         UserCredentials userCredentials = UserCredentials.unique();
@@ -99,7 +99,7 @@ public class BookApiTests {
         Assert.assertEquals(errorResponse.getMessage(), "User not found!", "Reading a deleted user should report that the user was not found");
     }
 
-    @Test(description = "BS-002: duplicate username is rejected")
+    @Test(priority = 2, testName = "BS-002: duplicate username is rejected")
     public void createUserWithExistingUsernameIsRejectedTest() {
         log.info("Step #1 - call createUser");
         UserCredentials userCredentials = UserCredentials.unique();
@@ -120,7 +120,7 @@ public class BookApiTests {
         createdUsers.put(user.getUserID(), token.getToken());
     }
 
-    @Test(description = "BS-003: empty userName is rejected")
+    @Test(priority = 3, testName = "BS-003: empty userName is rejected")
     public void createUserWithEmptyUserNameIsRejectedTest() {
         log.info("Step #1 - call createUser with an empty userName");
         UserCredentials userCredentials = UserCredentials.builder()
@@ -135,7 +135,7 @@ public class BookApiTests {
         Assert.assertEquals(errorResponse.getMessage(), "UserName and Password required.", "Empty userName should report the required-fields message");
     }
 
-    @Test(description = "BS-004: empty password is rejected")
+    @Test(priority = 4, testName = "BS-004: empty password is rejected")
     public void createUserWithEmptyPasswordIsRejectedTest() {
         log.info("Step #1 - call createUser with an empty password");
         UserCredentials userCredentials = UserCredentials.builder()
@@ -150,7 +150,7 @@ public class BookApiTests {
         Assert.assertEquals(errorResponse.getMessage(), "UserName and Password required.", "Empty password should report the required-fields message");
     }
 
-    @Test(description = "BS-005: get user without a token is rejected")
+    @Test(priority = 5, testName = "BS-005: get user without a token is rejected")
     public void getUserWithoutTokenIsRejectedTest() {
         log.info("Precondition - create user");
         UserCredentials userCredentials = UserCredentials.unique();
@@ -174,7 +174,7 @@ public class BookApiTests {
         // I got his idea! to clean up data pairs name-token is required. Not bad
     }
 
-    @Test(description = "BS-006: get info about invalid user")
+    @Test(priority = 6, testName = "BS-006: get info about invalid user")
     public void getInvalidUserIsRejectedTest() {
         log.info("Precondition - create user and generate token");
         UserCredentials userCredentials = UserCredentials.unique();
@@ -195,7 +195,7 @@ public class BookApiTests {
         Assert.assertEquals(errorResponse.getMessage(), "User not found!", "Fake userID should report that the user was not found");
     }
 
-    @Test(description = "BS-007: token grants access to own user only")
+    @Test(priority = 7, testName = "BS-007: token grants access to own user only")
     public void tokenDoesNotGrantAccessToAnotherUserTest() {
         log.info("Precondition - create user A and user B, generate token for A");
         String uniqueBase = UserCredentials.unique().getUserName();
@@ -234,7 +234,7 @@ public class BookApiTests {
         createdUsers.put(userB.getUserID(), tokenB.getToken());
     }
 
-    @Test(description = "BS-008: add book not in catalogue is rejected")
+    @Test(priority = 8, testName = "BS-008: add book not in catalogue is rejected")
     public void addBookNotInCatalogueIsRejectedTest() {
         log.info("Precondition - create user and authenticate");
         UserCredentials userCredentials = UserCredentials.unique();
@@ -262,7 +262,7 @@ public class BookApiTests {
         Assert.assertEquals(userInfo.getBooks().size(), 0, "Books should remain empty after a rejected add");
     }
 
-    @Test(description = "BS-009: add same book twice is rejected")
+    @Test(priority = 9, testName = "BS-009: add same book twice is rejected")
     public void addSameBookTwiceIsRejectedTest() {
         log.info("Precondition - create user, authenticate, add one book");
         UserCredentials userCredentials = UserCredentials.unique();
@@ -298,7 +298,7 @@ public class BookApiTests {
         Assert.assertEquals(userInfo.getBooks().size(), 1, "Books should contain exactly one element after a rejected duplicate add");
     }
 
-    @Test(description = "BS-010: remove book not in collection is rejected")
+    @Test(priority = 10, testName = "BS-010: remove book not in collection is rejected")
     public void removeBookNotInCollectionIsRejectedTest() {
         log.info("Precondition - create user, authenticate, empty collection");
         UserCredentials userCredentials = UserCredentials.unique();
@@ -325,7 +325,7 @@ public class BookApiTests {
         Assert.assertEquals(errorResponse.getMessage(), "ISBN supplied is not available in User's Collection!", "Removing an absent book should report the correct message");
     }
 
-    @Test(description = "BS-011: clear an empty collection")
+    @Test(priority = 11, testName = "BS-011: clear an empty collection")
     public void clearEmptyCollectionTest() {
         log.info("Precondition - create user, authenticate, empty collection");
         UserCredentials userCredentials = UserCredentials.unique();
@@ -350,7 +350,7 @@ public class BookApiTests {
         // add check that books was empty BEFORE removeAll method - need update test case
     }
 
-    @Test(description = "BS-012: get user with an invalid token")
+    @Test(priority = 12, testName = "BS-012: get user with an invalid token")
     public void getUserWithInvalidTokenIsRejectedTest() {
         log.info("Precondition - create user");
         UserCredentials userCredentials = UserCredentials.unique();
