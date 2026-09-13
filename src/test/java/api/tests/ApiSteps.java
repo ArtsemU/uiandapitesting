@@ -59,4 +59,8 @@ public class ApiSteps {
 
         return bookstoreClient.removeBook(rmoveBook, token);
     }
+
+    public Response removeAllBooksFromUser(String userId, String token) {
+        return bookstoreClient.removeAllBooks(userId, token);
+    }
 }
