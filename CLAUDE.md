@@ -132,7 +132,7 @@ is maintained manually.
 
 ### Test identifiers
 
-- Every test carries `@Test(testName = "XX-000: short description", priority = N)`.
+- Every test carries `@Test(priority = N, testName = "XX-000: short description")`.
   Keep the description part under roughly 60 characters so it stays readable on
   one line. `priority` is the numeric part of the test ID (e.g. `BS-010` →
   `priority = 10`) — it orders execution within a functional area, not overall
