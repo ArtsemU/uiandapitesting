@@ -2,20 +2,15 @@ package api.tests;
 
 import api.AccountClient;
 import api.BookstoreClient;
-import api.Config;
 import api.models.AddBook;
 import api.models.Book;
 import api.models.RemoveBook;
 import api.models.UserCredentials;
-import io.restassured.RestAssured;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import io.restassured.response.Response;
 
 import java.util.List;
 
 public class ApiSteps {
-    private static final Logger log = LoggerFactory.getLogger(ApiSteps.class);
 
     private AccountClient accountClient = new AccountClient();
     private BookstoreClient  bookstoreClient = new BookstoreClient();
