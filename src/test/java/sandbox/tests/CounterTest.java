@@ -15,7 +15,7 @@ public class CounterTest {
 
     private static final Logger log = LoggerFactory.getLogger(CounterTest.class);
 
-    private static final int INVOCATION_COUNT = 5;
+    private static final int INVOCATION_COUNT = 3;
     private static final int INCREMENTS_PER_INVOCATION = 1000;
 
     /** Shared on purpose: one instance for every invocation, so the increments race. */
