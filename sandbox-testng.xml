@@ -6,4 +6,9 @@
             <class name="sandbox.tests.CounterTest"/>
         </classes>
     </test>
+    <test name="MapWriterTest">
+        <classes>
+            <class name="sandbox.tests.MapWriterTest"/>
+        </classes>
+    </test>
 </suite>
