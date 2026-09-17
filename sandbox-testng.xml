@@ -11,4 +11,14 @@
             <class name="sandbox.tests.MapWriterTest"/>
         </classes>
     </test>
+    <test name="TokenHolderTest">
+        <classes>
+            <class name="sandbox.tests.TokenHolderTest"/>
+        </classes>
+    </test>
+    <test name="FlagVisibilityTest">
+        <classes>
+            <class name="sandbox.tests.FlagVisibilityTest"/>
+        </classes>
+    </test>
 </suite>
