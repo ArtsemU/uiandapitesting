@@ -21,4 +21,9 @@
             <class name="sandbox.tests.FlagVisibilityTest"/>
         </classes>
     </test>
+    <test name="CowTest">
+        <classes>
+            <class name="sandbox.tests.CowTest"/>
+        </classes>
+    </test>
 </suite>
