@@ -12,12 +12,14 @@ import org.testng.annotations.Test;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 public class BookApiTests {
     private static final Logger log = LoggerFactory.getLogger(BookApiTests.class);
     private final ApiSteps apiSteps = new ApiSteps();
-    private final Map<String, String> createdUsers = new LinkedHashMap<>();
+    //private final Map<String, String> createdUsers = new LinkedHashMap<>();
+    private final Map<String, String> createdUsers = new ConcurrentHashMap<>();
 
     @AfterMethod
     public void cleanupUsers() {
