@@ -20,6 +20,10 @@ Java 17, Maven, TestNG, Selenium 4, WebDriverManager, SLF4J + Log4j2.
   root, wired through `maven-surefire-plugin`.
 - Run a single class from the IDE: use the TestNG run configuration for the class.
 - Run a single class from the CLI: `mvn test -Dtest=TextBoxTest`.
+- Suite XML files for scoped or parallel runs (sandbox, API-only, UI-only)
+  live in `src/test/resources/suite/`. Run them directly via an IDE run
+  configuration pointing at the file — they are not wired into `mvn test`,
+  which still uses the root `testng.xml`.
 
 ## Architecture
 
@@ -42,10 +46,9 @@ Tests call Steps only, never Pages directly.
   layer tests interact with. Step methods own SLF4J logging for key actions.
 - `ui.models.*` — domain objects and their builders (e.g. `WebTableRecord`).
 - `testing.ui.BaseUITest` — TestNG base class. `@BeforeMethod` creates a Chrome
-  `WebDriver`, maximizes the window, and instantiates the relevant `*Steps` objects
-  as fields. `@AfterMethod` does not quit the driver — `driver.quit()` is commented
-  out on purpose so the browser stays open for inspection after a run.
-  **Do not uncomment it.**
+  `WebDriver`, maximizes the window, and instantiates the relevant `*Steps` objects,
+  each held in a `ThreadLocal` so parallel test methods don't share a browser
+  instance. `@AfterMethod` quits the driver and clears each `ThreadLocal`.
 - `testing.ui.*Test` — test classes. Call `*Steps` methods only, hold all
   assertions. No helper methods: anything reusable belongs in the steps layer.
 
