@@ -5,7 +5,9 @@ import org.slf4j.LoggerFactory;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.Test;
 
+import sandbox.AtomicCounter;
 import sandbox.Counter;
+import sandbox.SynchronizedCounter;
 
 /**
  * Sandbox for observing TestNG parallel execution mechanics.
@@ -16,10 +18,12 @@ public class CounterTest {
     private static final Logger log = LoggerFactory.getLogger(CounterTest.class);
 
     private static final int INVOCATION_COUNT = 3;
-    private static final int INCREMENTS_PER_INVOCATION = 1000;
+    private static final int INCREMENTS_PER_INVOCATION = 10000000;
 
     /** Shared on purpose: one instance for every invocation, so the increments race. */
     private final Counter counter = new Counter();
+    private final SynchronizedCounter synchronizedCounter = new SynchronizedCounter();
+    private final AtomicCounter atomicCounter = new AtomicCounter();
 
     @Test(invocationCount = INVOCATION_COUNT, threadPoolSize = 3)
     public void incrementsSharedCounter() {
@@ -31,9 +35,37 @@ public class CounterTest {
         }
     }
 
+    //
+    @Test(invocationCount = INVOCATION_COUNT, threadPoolSize = 3)
+    public void incrementsSynchronizedCounter() {
+        log.info("thread={} instance={}",
+                Thread.currentThread().getName(), System.identityHashCode(this));
+
+        for (int i = 0; i < INCREMENTS_PER_INVOCATION; i++) {
+            synchronizedCounter.increment();
+        }
+    }
+
+    @Test(invocationCount = INVOCATION_COUNT, threadPoolSize = 3)
+    public void incrementsAtomicCounter() {
+        log.info("thread={} instance={}",
+                Thread.currentThread().getName(), System.identityHashCode(this));
+
+        long start = System.nanoTime();
+        for (int i = 0; i < INCREMENTS_PER_INVOCATION; i++) {
+            atomicCounter.increment();
+        }
+        long elapsedMs = (System.nanoTime() - start) / 1_000_000;
+        log.info("thread={} elapsed={}ms", Thread.currentThread().getName(), elapsedMs);
+    }
+
     @AfterClass
     public void logFinalCount() {
         log.info("final count={} expected={}",
                 counter.getCount(), INVOCATION_COUNT * INCREMENTS_PER_INVOCATION);
+        log.info("final synchronized count={} expected={}",
+                synchronizedCounter.getCount(), INVOCATION_COUNT * INCREMENTS_PER_INVOCATION);
+        log.info("final atomic count={} expected={}",
+                atomicCounter.getCount(), INVOCATION_COUNT * INCREMENTS_PER_INVOCATION);
     }
 }

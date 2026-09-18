@@ -6,4 +6,24 @@
             <class name="sandbox.tests.CounterTest"/>
         </classes>
     </test>
+    <test name="MapWriterTest">
+        <classes>
+            <class name="sandbox.tests.MapWriterTest"/>
+        </classes>
+    </test>
+    <test name="TokenHolderTest">
+        <classes>
+            <class name="sandbox.tests.TokenHolderTest"/>
+        </classes>
+    </test>
+    <test name="FlagVisibilityTest">
+        <classes>
+            <class name="sandbox.tests.FlagVisibilityTest"/>
+        </classes>
+    </test>
+    <test name="CowTest">
+        <classes>
+            <class name="sandbox.tests.CowTest"/>
+        </classes>
+    </test>
 </suite>
