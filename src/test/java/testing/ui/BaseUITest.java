@@ -31,7 +31,7 @@ public class BaseUITest {
         log.info("Browser started");
     }
 
-    protected WebDriver driver() { return driverTL.get(); }
+    //protected WebDriver driver() { return driverTL.get(); }
     protected TextBoxSteps tbSteps() { return tbStepsTL.get(); }
     protected CheckBoxSteps cbSteps() { return cbStepsTL.get(); }
     protected WebTablesSteps wtSteps() { return wtStepsTL.get(); }
