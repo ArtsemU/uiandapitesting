@@ -22,7 +22,8 @@ public class BaseUITest {
     @BeforeMethod
     public void setUp() {
         log.info("Starting browser: CHROME");
-        driver = WebDriverFactory.createDriver(WebDriverFactory.Browser.CHROME);
+        //driver = WebDriverFactory.createDriver(WebDriverFactory.Browser.CHROME);
+        driver = WebDriverFactory.createRemoteDriver();
         driver.manage().window().maximize();
         tbSteps = new TextBoxSteps(driver);
         cbSteps = new CheckBoxSteps(driver);
@@ -34,7 +35,7 @@ public class BaseUITest {
     public void tearDown() {
         if (driver != null) {
             log.info("Closing browser");
-            //driver.quit();
+            driver.quit();
         }
     }
 }
