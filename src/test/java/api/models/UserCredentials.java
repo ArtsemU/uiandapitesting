@@ -44,8 +44,11 @@ public final class UserCredentials {
         }
     }
 
+    //p`rivate static String uniqueUserName(String base) {
+    //    return base + System.currentTimeMillis();
+    //}
     private static String uniqueUserName(String base) {
-        return base + System.currentTimeMillis();
+        return base + Thread.currentThread().getName() + "_" + System.currentTimeMillis();
     }
 
     public static UserCredentials unique() {

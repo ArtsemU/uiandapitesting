@@ -8,16 +8,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 public class BookApiTests {
     private static final Logger log = LoggerFactory.getLogger(BookApiTests.class);
     private final ApiSteps apiSteps = new ApiSteps();
-    private final Map<String, String> createdUsers = new LinkedHashMap<>();
+    //private final Map<String, String> createdUsers = new LinkedHashMap<>();
+    private final Map<String, String> createdUsers = new ConcurrentHashMap<>();
 
     @AfterMethod
     public void cleanupUsers() {
@@ -370,5 +372,33 @@ public class BookApiTests {
         Assert.assertEquals(rsToken.statusCode(), 200, "Expected status : 200");
         Token token = rsToken.as(Token.class);
         createdUsers.put(user.getUserID(), token.getToken());
+    }
+
+    @DataProvider(name = "invalidPasswords", parallel = true)
+    public Object[][] invalidPasswords() {
+        return new Object[][] {
+                { "shorter than 8 characters", "Ab1!xyz" },
+                { "without an uppercase letter", "abcdef1!" },
+                { "without a lowercase letter", "ABCDEF1!" },
+                { "without a digit", "Abcdefg!" },
+                { "without a special character", "Abcdefg1" },
+        };
+    }
+
+    @Test(dataProvider = "invalidPasswords", priority = 13, testName = "BS-013: invalid password is rejected")
+    public void createUserWithInvalidPasswordIsRejectedTest(String violation, String invalidPassword) {
+        log.info("Step #1 - call createUser with a valid userName and a password {}", violation);
+        UserCredentials userCredentials = UserCredentials.builder()
+                .userName(UserCredentials.unique().getUserName())
+                .password(invalidPassword)
+                .build();
+
+        Response rs = apiSteps.createUserCall(userCredentials);
+        Assert.assertEquals(rs.statusCode(), 400, "Password " + violation + " should be rejected");
+        ErrorResponse errorResponse = rs.as(ErrorResponse.class);
+        Assert.assertEquals(errorResponse.getCode(), "1300", "Password " + violation + " should report code 1300");
+        Assert.assertEquals(errorResponse.getMessage(),
+                "Passwords must have at least one non alphanumeric character, one digit ('0'-'9'), one uppercase ('A'-'Z'), one lowercase ('a'-'z'), one special character and Password must be eight characters or longer.",
+                "Password " + violation + " should report the password-rules message");
     }
 }
