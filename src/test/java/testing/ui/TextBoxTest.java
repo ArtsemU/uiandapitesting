@@ -12,10 +12,10 @@ public class TextBoxTest extends BaseUITest{
 
     @Test(priority = 1, description = "TB-001: setting only full name displays it in output")
     public void setNameOnlyTest() {
-        tbSteps.openTBPage();
-        tbSteps.fillFullName("John Doue");
-        tbSteps.submitForm();
-        String result = tbSteps.getOutputName();
+        tbSteps().openTBPage();
+        tbSteps().fillFullName("John Doue");
+        tbSteps().submitForm();
+        String result = tbSteps().getOutputName();
         Assert.assertEquals(result, "John Doue", "Full name mismatch");
     }
 
@@ -26,19 +26,19 @@ public class TextBoxTest extends BaseUITest{
         String currAddress = "Poland, Wroclaw, 50-422, Szybka 1A - 20";
         String perAddress = "Belarus, Minsk, 255125, Gor 7 - 55";
 
-        tbSteps.openTBPage();
-        tbSteps.fillFullName(fullName);
-        tbSteps.fillEmail(email);
-        tbSteps.fillCurrAddress(currAddress);
-        tbSteps.fillPerAddress(perAddress);
+        tbSteps().openTBPage();
+        tbSteps().fillFullName(fullName);
+        tbSteps().fillEmail(email);
+        tbSteps().fillCurrAddress(currAddress);
+        tbSteps().fillPerAddress(perAddress);
 
-        tbSteps.submitForm();
+        tbSteps().submitForm();
 
         SoftAssert softAssert = new SoftAssert();
-        softAssert.assertEquals(tbSteps.getOutputName(), fullName, "Full name mismatched");
-        softAssert.assertEquals(tbSteps.getOutputEmail(), email, "Email mismatched");
-        softAssert.assertEquals(tbSteps.getOutputCurrAddress(), currAddress, "Address mismatched");
-        softAssert.assertEquals(tbSteps.getOutputPerAddress(), perAddress, "Address mismatched");
+        softAssert.assertEquals(tbSteps().getOutputName(), fullName, "Full name mismatched");
+        softAssert.assertEquals(tbSteps().getOutputEmail(), email, "Email mismatched");
+        softAssert.assertEquals(tbSteps().getOutputCurrAddress(), currAddress, "Address mismatched");
+        softAssert.assertEquals(tbSteps().getOutputPerAddress(), perAddress, "Address mismatched");
         softAssert.assertAll();
     }
 

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="UI Suite" >
+    <test name="UI Tests">
+        <classes>
+            <class name="testing.ui.CheckBoxTest"/>
+            <class name="testing.ui.TextBoxTest"/>
+            <class name="testing.ui.WebTablesTest"/>
+        </classes>
+    </test>
+</suite>

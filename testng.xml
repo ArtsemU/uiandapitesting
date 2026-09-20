@@ -8,7 +8,11 @@
     </test>
     <test name="WebTablesTest">
         <classes>
-            <class name="testing.ui.WebTablesTest"/>
+            <class name="api.tests.BookApiTests">
+                <methods>
+                    <include name="addBookToUserE2ETest"/>
+                </methods>
+            </class>
         </classes>
     </test>
 </suite>
