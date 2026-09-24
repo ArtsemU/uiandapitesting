@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="CICD Test run">
+    <test name="Fast API test: run it for all commits">
+        <classes>
+            <class name="api.tests.BookApiTests">
+                <methods>
+                    <include name="addBookToUserE2ETest"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+</suite>

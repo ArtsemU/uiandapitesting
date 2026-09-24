@@ -401,4 +401,15 @@ public class BookApiTests {
                 "Passwords must have at least one non alphanumeric character, one digit ('0'-'9'), one uppercase ('A'-'Z'), one lowercase ('a'-'z'), one special character and Password must be eight characters or longer.",
                 "Password " + violation + " should report the password-rules message");
     }
+
+    @Test(priority = 99, testName = "BS-099 - fake test")
+    public void test() {
+        log.info("Step #1 - call test");
+    }
+
+    @Test(priority = 100, testName = "BS-100: fake test - static sum check")
+    public void fakeStaticSumTest() {
+        int result = 2 + 2;
+        Assert.assertEquals(result, 4, "Static sum 2 + 2 should equal 4");
+    }
 }

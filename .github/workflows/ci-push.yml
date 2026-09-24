@@ -1,0 +1,21 @@
+name: CI - push
+
+on:
+  push:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Run cicd_simple_commit suite
+        run: mvn -B test -DsuiteXmlFile=src/test/resources/suite/cicd_simple_commit.xml
