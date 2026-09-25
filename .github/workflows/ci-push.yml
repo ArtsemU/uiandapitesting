@@ -1,7 +1,8 @@
-name: CI - push
+name: CI
 
 on:
   push:
+  pull_request:
 
 jobs:
   test:
@@ -19,3 +20,7 @@ jobs:
 
       - name: Run cicd_simple_commit suite
         run: mvn -B test -DsuiteXmlFile=src/test/resources/suite/cicd_simple_commit.xml
+
+      - name: Run PR-only suite
+        if: github.event_name == 'pull_request'
+        run: mvn -B test -DsuiteXmlFile=src/test/resources/suite/<твой_второй_файл>.xml
