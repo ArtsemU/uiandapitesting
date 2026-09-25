@@ -95,6 +95,7 @@ public class CowTest {
 
     @Test
     public void milkingExactAvailable_returnsFullAmount() {
+        log.info("Test : milkingExactAvailable_returnsFullAmount");
         Cow cow = new Cow("Bessie");
 
         double milked = cow.milk(100.0);
@@ -104,6 +105,7 @@ public class CowTest {
 
     @Test
     public void milkingMoreThanAvailable_capsBalanceAtZero() {
+        log.info("Test : milkingMoreThanAvailable_capsBalanceAtZero");
         Cow cow = new Cow("Bessie");
 
         cow.milk(150.0);
@@ -122,6 +124,7 @@ public class CowTest {
 
     @Test
     public void milkingZero_leavesBalanceUnchanged() {
+        log.info("Test : milkingZero_leavesBalanceUnchanged");
         Cow cow = new Cow("Bessie");
 
         cow.milk(0.0);
@@ -131,6 +134,7 @@ public class CowTest {
 
     @Test
     public void milkingZero_returnsZero() {
+        log.info("Test : milkingZero_returnsZero");
         Cow cow = new Cow("Bessie");
 
         double milked = cow.milk(0.0);
@@ -140,6 +144,7 @@ public class CowTest {
 
     @Test
     public void milkingTwiceInSuccession_reducesCumulatively() {
+        log.info("Test : milkingTwiceInSuccession_reducesCumulatively");
         Cow cow = new Cow("Bessie");
 
         cow.milk(40.0);
@@ -150,6 +155,7 @@ public class CowTest {
 
     @Test
     public void milkingAfterDepleted_returnsZero() {
+        log.info("Test : milkingAfterDepleted_returnsZero");
         Cow cow = new Cow("Bessie");
 
         cow.milk(100.0);
