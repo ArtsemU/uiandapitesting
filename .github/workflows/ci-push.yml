@@ -1,10 +1,11 @@
-name: CI - push
+name: CI workflow
 
 on:
   push:
+  pull_request:
 
 jobs:
-  test:
+  simple_check:
     runs-on: ubuntu-latest
 
     steps:
@@ -19,3 +20,7 @@ jobs:
 
       - name: Run cicd_simple_commit suite
         run: mvn -B test -DsuiteXmlFile=src/test/resources/suite/cicd_simple_commit.xml
+
+      - name: Run PR-only suite
+        if: github.event_name == 'pull_request'
+        run: mvn -B test -DsuiteXmlFile=src/test/resources/suite/cicd_syntetic_tests.xml
