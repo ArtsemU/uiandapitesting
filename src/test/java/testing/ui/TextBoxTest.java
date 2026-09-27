@@ -10,7 +10,7 @@ import ui.steps.TextBoxSteps;
 public class TextBoxTest extends BaseUITest{
     private static final Logger log = LoggerFactory.getLogger(TextBoxTest.class);
 
-    @Test(priority = 1, description = "TB-001: setting only full name displays it in output")
+    @Test(priority = 1, testName = "TB-001: setting only full name displays it in output", groups = {"smoke"})
     public void setNameOnlyTest() {
         tbSteps().openTBPage();
         tbSteps().fillFullName("John Doue");
@@ -19,7 +19,7 @@ public class TextBoxTest extends BaseUITest{
         Assert.assertEquals(result, "John Doue", "Full name mismatch");
     }
 
-    @Test(description = "TB-002: submitted data is displayed in the output block")
+    @Test(priority = 2, testName = "TB-002: submitted data is displayed in the output block", groups = {"regression"})
     public void submittedDataIsDisplayedInOutput() {
         String fullName = "John Doue";
         String email = "johndoue@myemail.net";

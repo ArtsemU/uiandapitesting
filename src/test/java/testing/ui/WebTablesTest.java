@@ -11,7 +11,7 @@ import java.util.List;
 public class WebTablesTest extends BaseUITest {
     private static final Logger log = LoggerFactory.getLogger(WebTablesTest.class);
 
-    @Test(description = "WT-001: add record via form, verify full row in table")
+    @Test(priority = 1, testName = "WT-001: add record via form, verify full row in table", groups = {"smoke"})
     public void addRecordAppearsInTableWithAllFields() {
         WebTableRecord record = WebTableRecord.builder().build();
 
@@ -31,7 +31,7 @@ public class WebTablesTest extends BaseUITest {
         softAssert.assertAll();
     }
 
-    @Test(description = "WT-002: editing a record updates its row")
+    @Test(priority = 2, testName = "WT-002: editing a record updates its row", groups = {"regression"})
     public void editRecordUpdatesTheRow() {
         WebTableRecord original = WebTableRecord.unique(1);
         WebTableRecord updated = original.toBuilder()
@@ -56,7 +56,7 @@ public class WebTablesTest extends BaseUITest {
         softAssert.assertAll();
     }
 
-    @Test(description = "WT-003: filtering by email narrows the table to that record")
+    @Test(priority = 3, testName = "WT-003: filtering by email narrows the table to that record", groups = {"regression"})
     public void filterByEmailNarrowsTable() {
         WebTableRecord record = WebTableRecord.unique(1);
 
@@ -73,7 +73,7 @@ public class WebTablesTest extends BaseUITest {
         softAssert.assertAll();
     }
 
-    @Test(description = "WT-004: table paginates once it exceeds one page")
+    @Test(priority = 4, testName = "WT-004: table paginates once it exceeds one page", groups = {"regression"})
     public void tablePaginatesOnceItExceedsOnePage() {
         wtSteps().openWebTablesPage();
         int initialCount = wtSteps().getRecordCountOnCurrentPage();
@@ -116,7 +116,7 @@ public class WebTablesTest extends BaseUITest {
         softAssert.assertAll();
     }
 
-    @Test(description = "WT-005: deleting a record removes it from the table")
+    @Test(priority = 5, testName = "WT-005: deleting a record removes it from the table", groups = {"regression"})
     public void deleteRecordRemovesItFromTable() {
         WebTableRecord record = WebTableRecord.builder().build();
 

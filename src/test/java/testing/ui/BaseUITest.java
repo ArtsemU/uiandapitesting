@@ -20,10 +20,9 @@ public class BaseUITest {
 
     @BeforeMethod
     public void setUp() {
-        log.info("Starting browser: CHROME");
-        WebDriver driver = WebDriverFactory.createDriver(WebDriverFactory.Browser.CHROME);
-        //WebDriver driver = WebDriverFactory.createRemoteDriver(); // need run docker
-        driver.manage().window().maximize();
+        log.info("Starting browser");
+        WebDriver driver = WebDriverFactory.createDriver();
+        //WebDriver driver = WebDriverFactory.createRemoteDriver(); // need run docker, then maximize the window here
         driverTL.set(driver);
         tbStepsTL.set(new TextBoxSteps(driver));
         cbStepsTL.set(new CheckBoxSteps(driver));

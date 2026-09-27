@@ -8,7 +8,7 @@ import java.util.List;
 
 public class CheckBoxTest extends BaseUITest {
 
-    @Test(description = "CB-001: check Desktop selects Desktop, Notes, Commands")
+    @Test(priority = 1, testName = "CB-001: check Desktop selects Desktop, Notes, Commands", groups = {"smoke"})
     public void checkDesktopSelectsChildren() {
         cbSteps().openCheckBoxPage();
         cbSteps().expandNode("Home");
@@ -19,7 +19,7 @@ public class CheckBoxTest extends BaseUITest {
         Assert.assertEquals(selectedItems, CheckBoxTestData.EXPECTED_OUTPUT_DESKTOP, "Selected items mismatch");
     }
 
-    @Test(description = "CB-002: check Office+Downloads selects both subtrees")
+    @Test(priority = 2, testName = "CB-002: check Office+Downloads selects both subtrees", groups = {"regression"})
     public void checkOfficeAndDownloadsSelectsSubtrees() {
         cbSteps().openCheckBoxPage();
         cbSteps().expandNode("Home");
@@ -32,7 +32,7 @@ public class CheckBoxTest extends BaseUITest {
         Assert.assertEquals(selectedItems, CheckBoxTestData.EXPECTED_OUTPUT_OFFICE_DOWNLOADS, "Selected items mismatch");
     }
 
-    @Test(description = "CB-003: check Notes only selects just Notes")
+    @Test(priority = 3, testName = "CB-003: check Notes only selects just Notes", groups = {"regression"})
     public void checkNotesOnlySelectsNotes() {
         cbSteps().openCheckBoxPage();
         cbSteps().expandNode("Home");
