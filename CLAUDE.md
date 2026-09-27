@@ -149,8 +149,6 @@ is maintained manually.
   - `BS` — Books Store
 - `000` is a three-digit number within that area.
 - Test IDs are never reused, even after a test is deleted.
-- Temporary or exploratory code is never committed. Delete it once it has served its
-  purpose.
 
 ### Test data
 
@@ -215,3 +213,16 @@ ever needed. Loggers are obtained per class via SLF4J
 - Never choose a dependency version from memory. Say which dependency is
   needed and why, and let me pin the version.
 - Do not add a dependency without saying so explicitly in your summary.
+
+### Cleanup
+
+- Clean up after yourself within a task: scratch files, draft
+  implementations, or debug fragments created while iterating toward a
+  solution are removed before the task is considered done.
+
+### Sandbox package
+
+- `src/test/java/sandbox` is a dedicated space for experiments and concept
+  demonstrations, not for testing the application. Code here is not held
+  to this file's conventions. Corresponding suite XML files live under
+  `suite/`. Stays in the repo by design, not something to "clean up".
