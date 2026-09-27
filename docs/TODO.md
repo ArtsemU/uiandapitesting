@@ -2,31 +2,29 @@
 
 ## Decide
 
-- [ ] **Positional indexes.** CLAUDE.md forbids them, but `WebTablesPage` uses
-  `./td[n]` for columns and `CheckBoxPage` uses `ancestor::div[...][1]` —
-  neither has a non-positional alternative. Carve out an exception, drop
-  the rule, or leave it knowingly violated.
-
-- [ ] **Hard vs soft assertions.** The agent uses `SoftAssert` for everything,
-  including preconditions — those must stop the test. Fix in CLAUDE.md, in
-  the test case format, or both.
-
-- [ ] **Test case page format.** A flat list of steps cannot express which
-  checks are gates and which are results. Decide on a
-  Preconditions / Steps / Expected result structure before more cases exist.
+- [x] **Positional indexes.**
+- [x] **Hard vs soft assertions.**
+- [x] **Test case page format.**
 
 ## Fix
 
-- [ ] Delete `docs/driver-lifecycle.md` — fabricated example, describes a
-  Cucumber setup that does not exist here. Already cited once as real.
+- [x] Delete `docs/driver-lifecycle.md` — deleted, and both dangling
+  references removed (Confluence Project Overview rewritten, and the
+  entire `docs/confluence/` local mirror deleted as redundant — the agent
+  reads Confluence directly via MCP, so the mirror served no purpose and
+  was the actual source of staleness).
 
-- [ ] Remove assistant-behaviour rules from the Confluence overview pages
-  (generated docs go to a file, agent does not write to git). CLAUDE.md only.
+- [x] Remove assistant-behaviour rules from the Confluence overview pages
+  (generated docs go to a file, agent does not write to git). CLAUDE.md
+  only. Confirmed removed from Project Overview's Conventions section.
 
-- [ ] Move type parsing out of `TextBoxSteps` into `TextBoxPage` —
-  `value.split(":")[1]` leaks DOM handling into the steps layer.
+- [x] Move type parsing out of `TextBoxSteps` into `TextBoxPage` — done in
+  code, and Confluence's "Known gaps" entry for it removed (page renamed
+  from "Overview of demoQA UI Testing" to "UI Testing").
 
-- [ ] Move `EXPECTED_OUTPUT_<SCOPE>` to the demoQA child page. It is UI-specific.
+- [x] Move `EXPECTED_OUTPUT_<SCOPE>` to the demoQA child page. CLAUDE.md
+  marked it UI-only, and the convention is now documented on the "UI
+  Testing" Confluence page too.
 
 ## Later
 
@@ -36,11 +34,12 @@
 - [ ] **Screenshots on failure.** Listener work — `ITestListener.onTestFailure`,
   not try/catch in tests. Depends on the reporting decision.
 
-- [ ] Enable `driver.quit()` behind `-Dkeep.browser=true` instead of leaving it
-  commented out.
+- [x] ~~Enable `driver.quit()` behind `-Dkeep.browser=true`~~ Resolved
+  differently: `driver.quit()` is unconditional in
+  `@AfterMethod(alwaysRun = true)`, no flag — settled, not reopening.
 
-- [ ] Browser is hardcoded to `CHROME` in `BaseUITest` though `EDGE` and
-  `SAFARI` exist. Wire it to a property or record why not.
+- [x] Browser is hardcoded to `CHROME` — done via `-Dbrowser` system
+  property.
 
 - [ ] `api.Config` reads a single `api.properties` with no environment
   selection. Add a `-Denv` mechanism once a second environment exists;
