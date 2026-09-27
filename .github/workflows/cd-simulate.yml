@@ -1,0 +1,28 @@
+name: CD simulation
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy-qa1:
+    runs-on: ubuntu-latest
+    environment: qa1
+    steps:
+      - name: Deploy to QA1 (simulated)
+        run: echo "Deploying commit ${{ github.sha }} to QA1..."
+
+  deploy-stage:
+    needs: deploy-qa1
+    runs-on: ubuntu-latest
+    environment: stage
+    steps:
+      - name: Deploy to Stage (simulated)
+        run: echo "Deploying commit ${{ github.sha }} to Stage..."
+
+  deploy-prod:
+    needs: deploy-stage
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - name: Deploy to Prod (simulated)
+        run: echo "Deploying commit ${{ github.sha }} to Prod..."
