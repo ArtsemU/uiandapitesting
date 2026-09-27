@@ -5,11 +5,11 @@ in this repository.
 
 ## Project overview
 
-A Java/Selenium UI test automation project. RestAssured is a dependency for future
-API tests (hence the project name `uiandapitesting`), but no API tests exist yet.
+A Java/Selenium UI and RestAssured API test automation project (hence the project
+name `uiandapitesting`).
 
-Page Object Model suites currently cover three demoQA pages: Text Box, Check Box
-and Web Tables.
+Page Object Model suites cover three demoQA pages: Text Box, Check Box and Web
+Tables. API tests cover the demoQA Bookstore API (`BookApiTests`).
 
 Java 17, Maven, TestNG, Selenium 4, WebDriverManager, SLF4J + Log4j2.
 
@@ -34,7 +34,11 @@ Tests call Steps only, never Pages directly.
 
 - `factory.WebDriverFactory` — creates the `WebDriver` instance. `Browser` enum
   (`CHROME`, `EDGE`, `SAFARI`) selects the driver; WebDriverManager resolves driver
-  binaries automatically.
+  binaries automatically. Headless mode and browser selection are controlled by
+  the `headless` and `browser` JVM system properties (see CI/CD section below) —
+  read directly by this code via `System.getProperty(...)`, unrelated to
+  `pom.xml`'s `suiteXmlFile` property. Default behavior (no properties passed) is
+  a visible Chrome window, unchanged from before these switches existed.
 - `ui.pages.BasePage` — shared Selenium plumbing: `click`, `sendKeys`, `getText`,
   `isDisplayed`, `waitForPageLoad`, all built on an explicit `WebDriverWait` with a
   10-second timeout. Element interaction in page objects goes through these helpers
@@ -45,10 +49,15 @@ Tests call Steps only, never Pages directly.
 - `ui.steps.*Steps` — compose page objects into business-level actions. This is the
   layer tests interact with. Step methods own SLF4J logging for key actions.
 - `ui.models.*` — domain objects and their builders (e.g. `WebTableRecord`).
-- `testing.ui.BaseUITest` — TestNG base class. `@BeforeMethod` creates a Chrome
-  `WebDriver`, maximizes the window, and instantiates the relevant `*Steps` objects,
+- `testing.ui.BaseUITest` — TestNG base class. `@BeforeMethod(alwaysRun = true)`
+  creates a `WebDriver` via `WebDriverFactory`, maximizes the window (skipped when
+  headless, except for Safari), and instantiates the relevant `*Steps` objects,
   each held in a `ThreadLocal` so parallel test methods don't share a browser
-  instance. `@AfterMethod` quits the driver and clears each `ThreadLocal`.
+  instance. `@AfterMethod(alwaysRun = true)` quits the driver and clears each
+  `ThreadLocal`. `alwaysRun = true` is required on both: group-filtered suites
+  (e.g. `ui_smoke.xml`) would otherwise silently skip these configuration methods,
+  since TestNG's group filter applies to `@BeforeMethod`/`@AfterMethod` too, not
+  just to `@Test` methods.
 - `testing.ui.*Test` — test classes. Call `*Steps` methods only, hold all
   assertions. No helper methods: anything reusable belongs in the steps layer.
 
@@ -135,11 +144,15 @@ is maintained manually.
 
 ### Test identifiers
 
-- Every test carries `@Test(priority = N, testName = "XX-000: short description")`.
-  Keep the description part under roughly 60 characters so it stays readable on
-  one line. `priority` is the numeric part of the test ID (e.g. `BS-010` →
-  `priority = 10`) — it orders execution within a functional area, not overall
-  importance.
+- Every test carries `@Test(priority = N, testName = "XX-000: short description",
+  groups = {"smoke"|"regression"})`. Keep the description part under roughly 60
+  characters so it stays readable on one line. `priority` is the numeric part of
+  the test ID (e.g. `BS-010` → `priority = 10`) — it orders execution within a
+  functional area, not overall importance.
+- `groups`: `priority == 1` → `groups = {"smoke"}`; every other priority →
+  `groups = {"regression"}`. This applies per functional area, so each area has
+  its own `smoke` test (`TB-001`, `CB-001`, `WT-001`, `BS-001`, ...), not one
+  `smoke` test overall.
 - `XX` identifies the **functional area**, not the technology. An area keeps its
   prefix whether it is exercised through the UI or the API.
 - Current prefixes:
@@ -185,6 +198,30 @@ colorized pattern; a commented-out file appender is available if file logging is
 ever needed. Loggers are obtained per class via SLF4J
 (`LoggerFactory.getLogger(...)`).
 
+## CI/CD
+
+GitHub Actions workflows live under `.github/workflows/`:
+
+- `ci-workflow.yml` — runs on every `push` and `pull_request`. Always runs
+  `cicd_simple_commit.xml` (API) and `ui_smoke.xml` (UI, headless). PR events and
+  pushes to `master` (i.e. a merge) additionally run `cicd_syntetic_tests.xml`
+  (PR only — demo/sandbox suite) and `ui_regression.xml` (UI, headless, both PR
+  and merge).
+- `cd-simulate.yml` — manual (`workflow_dispatch`) simulated deploy pipeline:
+  three sequential jobs (`deploy-qa1` → `deploy-stage` → `deploy-prod`), each
+  scoped to a GitHub Environment (`qa1`, `stage`, `prod`) with its own protection
+  rules (required reviewer, wait timer). The deploy step itself is a placeholder
+  `echo` — there is no real deploy target, only the environment-gating mechanism
+  is real.
+- `nightly.yml` — `schedule` (cron) trigger, independent of any code event, plus
+  `workflow_dispatch` for manual runs. Runs the full regression scope on a fixed
+  schedule rather than tied to a push/PR/merge.
+
+Headless mode and browser selection for UI suites are controlled via JVM system
+properties, not `pom.xml`: `-Dheadless=true` (default `false`, visible browser)
+and `-Dbrowser=CHROME|EDGE|SAFARI` (default `CHROME`). Any suite run against
+`ubuntu-latest` (no display) must pass `-Dheadless=true`.
+
 ## Working agreements
 
 ### Git
@@ -192,6 +229,19 @@ ever needed. Loggers are obtained per class via SLF4J
 - Never write to git: no branches, no commits, no stashing, no push, no pull
   requests. Branching and PRs are handled manually.
 - Reading is fine and encouraged: `git status`, `git diff`, `git log`.
+
+### Cleanup
+
+- Clean up after yourself within a task: scratch files, draft
+  implementations, or debug fragments created while iterating toward a
+  solution are removed before the task is considered done.
+
+### Sandbox package
+
+- `src/test/java/sandbox` is a dedicated space for experiments and concept
+  demonstrations, not for testing the application. Code here is not held
+  to this file's conventions. Corresponding suite XML files live under
+  `suite/`. Stays in the repo by design, not something to "clean up".
 
 ### Generated output
 
@@ -213,16 +263,3 @@ ever needed. Loggers are obtained per class via SLF4J
 - Never choose a dependency version from memory. Say which dependency is
   needed and why, and let me pin the version.
 - Do not add a dependency without saying so explicitly in your summary.
-
-### Cleanup
-
-- Clean up after yourself within a task: scratch files, draft
-  implementations, or debug fragments created while iterating toward a
-  solution are removed before the task is considered done.
-
-### Sandbox package
-
-- `src/test/java/sandbox` is a dedicated space for experiments and concept
-  demonstrations, not for testing the application. Code here is not held
-  to this file's conventions. Corresponding suite XML files live under
-  `suite/`. Stays in the repo by design, not something to "clean up".
