@@ -21,7 +21,7 @@ public class BookApiTests {
     //private final Map<String, String> createdUsers = new LinkedHashMap<>();
     private final Map<String, String> createdUsers = new ConcurrentHashMap<>();
 
-    @AfterMethod
+    @AfterMethod(alwaysRun = true)
     public void cleanupUsers() {
         for (Map.Entry<String, String> entry : createdUsers.entrySet()) {
             try {
