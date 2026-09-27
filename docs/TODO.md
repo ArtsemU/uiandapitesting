@@ -2,16 +2,16 @@
 
 ## Decide
 
-- [ ] **Positional indexes.** CLAUDE.md forbids them, but `WebTablesPage` uses
+- [x] **Positional indexes.** CLAUDE.md forbids them, but `WebTablesPage` uses
   `./td[n]` for columns and `CheckBoxPage` uses `ancestor::div[...][1]` —
   neither has a non-positional alternative. Carve out an exception, drop
   the rule, or leave it knowingly violated.
 
-- [ ] **Hard vs soft assertions.** The agent uses `SoftAssert` for everything,
+- [x] **Hard vs soft assertions.** The agent uses `SoftAssert` for everything,
   including preconditions — those must stop the test. Fix in CLAUDE.md, in
   the test case format, or both.
 
-- [ ] **Test case page format.** A flat list of steps cannot express which
+- [x] **Test case page format.** A flat list of steps cannot express which
   checks are gates and which are results. Decide on a
   Preconditions / Steps / Expected result structure before more cases exist.
 

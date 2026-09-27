@@ -167,9 +167,9 @@ is maintained manually.
 
 - Test data is fixed and deterministic. No random values, no Faker. Where multiple
   records are needed, vary them with a counter.
-- Constants holding values read from the page under test are named
-  `EXPECTED_OUTPUT_<SCOPE>`. The name must make clear these are the application's
-  internal values, not the labels shown in the UI.
+- **UI only:** constants holding values read from the page under test are
+  named `EXPECTED_OUTPUT_<SCOPE>`. The name must make clear these are the
+  application's internal values, not the labels shown in the UI.
 - Timestamp-based usernames are an accepted exception to the "no random values"
   rule for API tests: the demoQA user registry is shared and global across all
   users of the site, so a fixed username would eventually collide. The value
