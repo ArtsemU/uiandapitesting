@@ -14,18 +14,17 @@
   reads Confluence directly via MCP, so the mirror served no purpose and
   was the actual source of staleness).
 
-- [ ] Remove assistant-behaviour rules from the Confluence overview pages
+- [x] Remove assistant-behaviour rules from the Confluence overview pages
   (generated docs go to a file, agent does not write to git). CLAUDE.md
-  only. Status unclear — confirm whether these lines were dropped when
-  the Project Overview page was updated.
+  only. Confirmed removed from Project Overview's Conventions section.
 
 - [x] Move type parsing out of `TextBoxSteps` into `TextBoxPage` — done in
   code, and Confluence's "Known gaps" entry for it removed (page renamed
   from "Overview of demoQA UI Testing" to "UI Testing").
 
-- [ ] Move `EXPECTED_OUTPUT_<SCOPE>` to the demoQA child page. CLAUDE.md
-  updated (marked UI-only), but the convention still needs to actually be
-  added to the "UI Testing" Confluence page — not done yet.
+- [x] Move `EXPECTED_OUTPUT_<SCOPE>` to the demoQA child page. CLAUDE.md
+  marked it UI-only, and the convention is now documented on the "UI
+  Testing" Confluence page too.
 
 ## Later
 
