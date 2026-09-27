@@ -21,6 +21,16 @@ jobs:
       - name: Run cicd_simple_commit suite
         run: mvn -B test -DsuiteXmlFile=src/test/resources/suite/cicd_simple_commit.xml
 
+      - name: Run UI smoke suite (headless)
+        run: mvn -B test -DsuiteXmlFile=src/test/resources/suite/ui_smoke.xml -Dheadless=true
+
       - name: Run PR-only suite
         if: github.event_name == 'pull_request'
         run: mvn -B test -DsuiteXmlFile=src/test/resources/suite/cicd_syntetic_tests.xml
+
+      - name: Run UI regression suite (headless)
+        if: github.event_name == 'pull_request'
+        run: mvn -B test -DsuiteXmlFile=src/test/resources/suite/ui_regression.xml -Dheadless=true
+      - name: Run UI regression suite on merge (headless)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        run: mvn -B test -DsuiteXmlFile=src/test/resources/suite/ui_regression.xml -Dheadless=true

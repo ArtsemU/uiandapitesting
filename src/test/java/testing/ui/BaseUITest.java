@@ -18,12 +18,11 @@ public class BaseUITest {
     private static final ThreadLocal<CheckBoxSteps> cbStepsTL = new ThreadLocal<>();
     private static final ThreadLocal<WebTablesSteps> wtStepsTL = new ThreadLocal<>();
 
-    @BeforeMethod
+    @BeforeMethod(alwaysRun = true)
     public void setUp() {
-        log.info("Starting browser: CHROME");
-        WebDriver driver = WebDriverFactory.createDriver(WebDriverFactory.Browser.CHROME);
-        //WebDriver driver = WebDriverFactory.createRemoteDriver(); // need run docker
-        driver.manage().window().maximize();
+        log.info("Starting browser");
+        WebDriver driver = WebDriverFactory.createDriver();
+        //WebDriver driver = WebDriverFactory.createRemoteDriver(); // need run docker, then maximize the window here
         driverTL.set(driver);
         tbStepsTL.set(new TextBoxSteps(driver));
         cbStepsTL.set(new CheckBoxSteps(driver));
@@ -36,7 +35,7 @@ public class BaseUITest {
     protected CheckBoxSteps cbSteps() { return cbStepsTL.get(); }
     protected WebTablesSteps wtSteps() { return wtStepsTL.get(); }
 
-    @AfterMethod
+    @AfterMethod(alwaysRun = true)
     public void tearDown() {
         WebDriver driver = driverTL.get();
         if (driver != null) {
