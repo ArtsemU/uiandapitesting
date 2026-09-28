@@ -2,7 +2,6 @@ package bdd;
 
 import api.models.CreateUserResponse;
 import api.models.ErrorResponse;
-import api.models.Token;
 import api.models.UserCredentials;
 import api.steps.ApiSteps;
 import io.cucumber.java.en.Then;
@@ -66,35 +65,18 @@ public class UserStepDefs {
         context.setLastResponse(apiSteps.generateToken(context.getCredentials()));
     }
 
-    @Then("the user receives a token")
-    public void theUserReceivesAToken() {
-        Response rs = context.getLastResponse();
-        Assert.assertEquals(rs.statusCode(), 200, "Token generation should succeed");
-        Token token = rs.as(Token.class);
-        Assert.assertNotNull(token.getToken(), "Token generation should return a token");
-        context.setToken(token.getToken());
-    }
-
-    @When("the user views their account")
-    public void theUserViewsTheirAccount() {
-        context.setLastResponse(apiSteps.getUserData(context.getUserId(), context.getToken()));
-    }
-
     @When("the user deletes their account")
     public void theUserDeletesTheirAccount() {
         context.setLastResponse(apiSteps.removeUser(context.getUserId(), context.getToken()));
     }
 
-    @Then("the user's account is deleted")
-    public void theUsersAccountIsDeleted() {
+    @Then("the user's account can no longer be found")
+    public void theUsersAccountCanNoLongerBeFound() {
         Assert.assertEquals(context.getLastResponse().statusCode(), 204, "Deleting the account should succeed");
         // Deleted by the scenario itself: the cleanup hook must not try again.
         context.forgetCreatedUser(context.getUserId());
-    }
 
-    @Then("the user's account is not found")
-    public void theUsersAccountIsNotFound() {
-        Response rs = context.getLastResponse();
+        Response rs = apiSteps.getUserData(context.getUserId(), context.getToken());
         Assert.assertEquals(rs.statusCode(), 401, "Reading a deleted user should be rejected");
         ErrorResponse error = rs.as(ErrorResponse.class);
         Assert.assertEquals(error.getMessage(), "User not found!",

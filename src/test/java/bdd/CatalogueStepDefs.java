@@ -2,8 +2,7 @@ package bdd;
 
 import api.models.Books;
 import api.steps.ApiSteps;
-import io.cucumber.java.en.Then;
-import io.cucumber.java.en.When;
+import io.cucumber.java.en.Given;
 import io.restassured.response.Response;
 import org.testng.Assert;
 
@@ -17,14 +16,9 @@ public class CatalogueStepDefs {
         this.apiSteps = apiSteps;
     }
 
-    @When("the user browses the catalogue")
-    public void theUserBrowsesTheCatalogue() {
-        context.setLastResponse(apiSteps.getAllBooks());
-    }
-
-    @Then("the catalogue has books")
-    public void theCatalogueHasBooks() {
-        Response rs = context.getLastResponse();
+    @Given("the bookstore catalogue has books")
+    public void theBookstoreCatalogueHasBooks() {
+        Response rs = apiSteps.getAllBooks();
         Assert.assertEquals(rs.statusCode(), 200, "Reading the catalogue should succeed");
         Books books = rs.as(Books.class);
         Assert.assertFalse(books.getBooks().isEmpty(), "Catalogue should not be empty");
