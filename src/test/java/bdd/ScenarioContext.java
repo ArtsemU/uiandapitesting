@@ -3,6 +3,7 @@ package bdd;
 import api.models.Book;
 import api.models.UserCredentials;
 import io.restassured.response.Response;
+import ui.models.WebTableRecord;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -22,6 +23,10 @@ public class ScenarioContext {
     private Book selectedBook;
     // Response of the latest When step, checked by the Then step that follows it.
     private Response lastResponse;
+
+    // Web Tables: the record the scenario adds and the row count seen before adding it.
+    private WebTableRecord webTableRecord;
+    private int initialRecordCount;
 
     // Users still present on the server, deleted by the @After("@api") hook.
     private final Map<String, UserCredentials> createdUsers = new LinkedHashMap<>();
@@ -84,5 +89,21 @@ public class ScenarioContext {
 
     public Map<String, UserCredentials> getCreatedUsers() {
         return Collections.unmodifiableMap(createdUsers);
+    }
+
+    public WebTableRecord getWebTableRecord() {
+        return webTableRecord;
+    }
+
+    public void setWebTableRecord(WebTableRecord webTableRecord) {
+        this.webTableRecord = webTableRecord;
+    }
+
+    public int getInitialRecordCount() {
+        return initialRecordCount;
+    }
+
+    public void setInitialRecordCount(int initialRecordCount) {
+        this.initialRecordCount = initialRecordCount;
     }
 }

@@ -105,7 +105,7 @@ public class BookApiTests {
         Response removedUser = apiSteps.getUserData(user.getUserID(), token.getToken());
         Assert.assertEquals(removedUser.statusCode(), 401, "Expected status : 401");
         ErrorResponse errorResponse = removedUser.as(ErrorResponse.class);
-        Assert.assertEquals(errorResponse.getMessage(), "User not found!", "Reading a deleted user should report that the user was not found");
+        Assert.assertEquals(errorResponse.getMessage(), BookstoreTestData.USER_NOT_FOUND_MESSAGE, "Reading a deleted user should report that the user was not found");
     }
 
     @Test(priority = 2, testName = "BS-002: duplicate username is rejected", groups = {"regression"})
@@ -201,7 +201,7 @@ public class BookApiTests {
         Assert.assertEquals(rsInvalidUser.statusCode(), 401, "Fake userID should be rejected");
         ErrorResponse errorResponse = rsInvalidUser.as(ErrorResponse.class);
         Assert.assertEquals(errorResponse.getCode(), "1207", "Fake userID should report code 1207");
-        Assert.assertEquals(errorResponse.getMessage(), "User not found!", "Fake userID should report that the user was not found");
+        Assert.assertEquals(errorResponse.getMessage(), BookstoreTestData.USER_NOT_FOUND_MESSAGE, "Fake userID should report that the user was not found");
     }
 
     @Test(priority = 7, testName = "BS-007: token grants access to own user only", groups = {"regression"})

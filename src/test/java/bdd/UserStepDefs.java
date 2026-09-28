@@ -20,19 +20,17 @@ public class UserStepDefs {
         this.apiSteps = apiSteps;
     }
 
-    // Regex rather than a Cucumber Expression: one binding covers both phrasings,
-    // the password is null when the optional part is absent.
-    @When("^a new user registers(?: with the password \"([^\"]*)\")?$")
-    public void aNewUserRegisters(String password) {
-        UserCredentials credentials = UserCredentials.unique();
-        if (password != null) {
-            credentials = UserCredentials.builder()
-                    .userName(credentials.getUserName())
-                    .password(password)
-                    .build();
-        }
-        context.setCredentials(credentials);
-        context.setLastResponse(apiSteps.createUserCall(credentials));
+    @When("a new user registers")
+    public void aNewUserRegisters() {
+        register(UserCredentials.unique());
+    }
+
+    @When("a new user registers with the password {string}")
+    public void aNewUserRegistersWithThePassword(String password) {
+        register(UserCredentials.builder()
+                .userName(UserCredentials.unique().getUserName())
+                .password(password)
+                .build());
     }
 
     @Then("the user is registered with an empty collection")
@@ -41,18 +39,12 @@ public class UserStepDefs {
         Assert.assertEquals(rs.statusCode(), 201, "User registration should succeed");
         CreateUserResponse user = rs.as(CreateUserResponse.class);
         Assert.assertNotNull(user.getUserID(), "Registration should return a userID");
-        context.setUserId(user.getUserID());
-        context.recordCreatedUser(user.getUserID(), context.getCredentials());
         Assert.assertEquals(user.getBooks().size(), 0, "A newly registered user should have no books");
     }
 
     @Then("the registration is rejected for breaking the password rules")
     public void theRegistrationIsRejectedForBreakingThePasswordRules() {
         Response rs = context.getLastResponse();
-        if (rs.statusCode() == 201) {
-            // Unexpectedly created: hand the user to the cleanup hook before the assertion fails.
-            context.recordCreatedUser(rs.as(CreateUserResponse.class).getUserID(), context.getCredentials());
-        }
         Assert.assertEquals(rs.statusCode(), 400, "A password breaking the rules should be rejected");
         ErrorResponse error = rs.as(ErrorResponse.class);
         Assert.assertEquals(error.getCode(), "1300", "A rejected password should report code 1300");
@@ -79,7 +71,19 @@ public class UserStepDefs {
         Response rs = apiSteps.getUserData(context.getUserId(), context.getToken());
         Assert.assertEquals(rs.statusCode(), 401, "Reading a deleted user should be rejected");
         ErrorResponse error = rs.as(ErrorResponse.class);
-        Assert.assertEquals(error.getMessage(), "User not found!",
+        Assert.assertEquals(error.getMessage(), BookstoreTestData.USER_NOT_FOUND_MESSAGE,
                 "Reading a deleted user should report that the user was not found");
+    }
+
+    // Records the user for cleanup as soon as it exists, so a failing Then cannot leak it.
+    private void register(UserCredentials credentials) {
+        context.setCredentials(credentials);
+        Response rs = apiSteps.createUserCall(credentials);
+        context.setLastResponse(rs);
+        if (rs.statusCode() == 201) {
+            String userId = rs.as(CreateUserResponse.class).getUserID();
+            context.setUserId(userId);
+            context.recordCreatedUser(userId, credentials);
+        }
     }
 }
