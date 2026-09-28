@@ -1,0 +1,15 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<!--
+  BDD scenarios in parallel.
+  Parallelism comes from the runner's @DataProvider(parallel = true);
+  data-provider-thread-count sets the pool size (TestNG default is 10 — too many
+  browsers against demoQA). thread-count / parallel="methods" have no effect here:
+  every scenario is an invocation of the same runScenario method.
+-->
+<suite name="BDD parallel" data-provider-thread-count="5">
+    <test name="BDD scenarios in parallel">
+        <classes>
+            <class name="bdd.CucumberParallelRunner"/>
+        </classes>
+    </test>
+</suite>

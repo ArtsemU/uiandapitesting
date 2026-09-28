@@ -24,3 +24,6 @@ jobs:
 
       - name: Run API parallel testing suite
         run: mvn -B test -DsuiteXmlFile=src/test/resources/suite/api-parallel-testng.xml
+
+      - name: Run BDD parallel suite (headless)
+        run: mvn -B test -DsuiteXmlFile=src/test/resources/suite/bdd_parallel.xml -Dheadless=true
