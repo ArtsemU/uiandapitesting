@@ -1,4 +1,4 @@
-package api.tests;
+package api.steps;
 
 import api.AccountClient;
 import api.BookstoreClient;

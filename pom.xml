@@ -18,6 +18,20 @@
     <suiteXmlFile>testng.xml</suiteXmlFile>
   </properties>
 
+    <dependencyManagement>
+      <dependencies>
+        <!-- Cucumber BOM: single version source for all Cucumber artifacts -->
+        <!-- Source: https://mvnrepository.com/artifact/io.cucumber/cucumber-bom -->
+        <dependency>
+          <groupId>io.cucumber</groupId>
+          <artifactId>cucumber-bom</artifactId>
+          <version>7.34.9</version>
+          <type>pom</type>
+          <scope>import</scope>
+        </dependency>
+      </dependencies>
+    </dependencyManagement>
+
   <dependencies>
 
     <!-- Source: https://mvnrepository.com/artifact/org.testng/testng -->
@@ -80,6 +94,23 @@
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-slf4j2-impl</artifactId>
       <version>2.26.0</version>
+    </dependency>
+
+    <!-- Cucumber (versions from cucumber-bom) -->
+    <dependency>
+      <groupId>io.cucumber</groupId>
+      <artifactId>cucumber-java</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.cucumber</groupId>
+      <artifactId>cucumber-testng</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.cucumber</groupId>
+      <artifactId>cucumber-picocontainer</artifactId>
+      <scope>test</scope>
     </dependency>
 
   </dependencies>

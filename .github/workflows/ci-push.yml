@@ -34,3 +34,21 @@ jobs:
       - name: Run UI regression suite on merge (headless)
         if: github.event_name == 'push' && github.ref == 'refs/heads/master'
         run: mvn -B test -DsuiteXmlFile=src/test/resources/suite/ui_regression.xml -Dheadless=true
+
+  bdd:
+    # Same events as the regression steps: pull requests and merges to master, not plain pushes.
+    if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/master')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Run BDD suite (headless)
+        run: mvn -B test -DsuiteXmlFile=src/test/resources/suite/bdd.xml -Dheadless=true
