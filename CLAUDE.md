@@ -98,6 +98,10 @@ converts the body to a model.
 - `api`         — API clients, one per resource (e.g. `AccountClient`, `BookstoreClient`)
 - `api.models`  — request/response models and builders
 - `api.tests`   — API test classes, named `<Area>ApiTests`
+- `bdd` — Cucumber glue: runner, step definitions (`*StepDefs`), hooks and the
+    scenario context. Feature files live in `src/test/resources/bdd/features/<area>/`,
+    not under `src/test/java` — Maven does not copy non-Java files from there onto
+    the test classpath.
 
 Unlike `ui.models`, `api.models` lives under `src/test/java` rather than
 `src/main/java` — API code has no main-source caller that needs to compile
@@ -193,16 +197,49 @@ is maintained manually.
 
 ### Logging
 
-Log4j2 config is at `src/test/resources/log4j2.xml` — console-only appender with a
-colorized pattern; a commented-out file appender is available if file logging is
-ever needed. Loggers are obtained per class via SLF4J
-(`LoggerFactory.getLogger(...)`).
+- Log4j2 config is at `src/test/resources/log4j2.xml` — console-only appender with a
+  colorized pattern; a commented-out file appender is available if file logging is
+  ever needed. Loggers are obtained per class via SLF4J
+  (`LoggerFactory.getLogger(...)`).
 
 ### Parallel safety
 - Suites run with parallel="methods": TestNG shares one test-class instance across
   threads. Mutable instance fields in test classes must be thread-confined
   (ThreadLocal, cleared in @AfterMethod(alwaysRun = true)). A thread-safe collection
   is not enough — it prevents corruption, not cross-test interference.
+
+### BDD (Cucumber)
+
+- Cucumber 7.x through `cucumber-testng`, with PicoContainer for dependency
+  injection. All Cucumber artifacts take their version from `cucumber-bom` — one
+  version to pin, never per-artifact versions.
+- Scenarios duplicate existing test cases; the TestNG tests stay as they are.
+  Every scenario implements an existing Confluence test case — never invent one.
+- Tags replace `priority` / `testName` / `groups`: each scenario carries its test
+  case ID (`@BS-001`), `@smoke` or `@regression` by the same rule as TestNG groups
+  (`XX-001` → `@smoke`, everything else → `@regression`), and `@api` or `@ui`.
+- Gherkin is written in the third person ("the user") and declaratively: describe
+  behaviour, not UI mechanics or HTTP calls. `When the user adds a book to their
+  collection`, not `When the user clicks "Add"`. One `When` per scenario.
+- Step text is bound with Cucumber Expressions. Regular expressions only where
+  they substantially simplify the binding.
+- Step definitions call `*Steps` / `ApiSteps` only — no locators, no WebElement,
+  no RestAssured calls, no response deserialisation. Missing behaviour is added
+  to the steps layer, not to glue.
+- Assertions only in `Then` steps, following the same rules as TestNG tests:
+  API — hard `Assert`; UI — `SoftAssert`, where each `Then` step creates its own
+  `SoftAssert` and calls `assertAll()` at the end of that step; preconditions in
+  `Given` — hard `Assert`.
+- State between steps is shared only through the PicoContainer-injected scenario
+  context. No static fields in glue or hooks.
+- Step definition classes are organised by domain concept (`UserStepDefs`,
+  `CollectionStepDefs`), not by feature file. Before adding a step definition,
+  search existing glue for one that matches or can be parameterised —
+  near-duplicate phrasings are not allowed.
+- API cleanup runs in an `@After("@api")` hook over the users recorded in the
+  scenario context. A failed cleanup is logged and never fails the scenario.
+- BDD runs through its own suite XML in `src/test/resources/suite/`, not through
+  the root `testng.xml`.
 
 ## CI/CD
 
