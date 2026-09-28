@@ -198,6 +198,12 @@ colorized pattern; a commented-out file appender is available if file logging is
 ever needed. Loggers are obtained per class via SLF4J
 (`LoggerFactory.getLogger(...)`).
 
+### Parallel safety
+- Suites run with parallel="methods": TestNG shares one test-class instance across
+  threads. Mutable instance fields in test classes must be thread-confined
+  (ThreadLocal, cleared in @AfterMethod(alwaysRun = true)). A thread-safe collection
+  is not enough — it prevents corruption, not cross-test interference.
+
 ## CI/CD
 
 GitHub Actions workflows live under `.github/workflows/`:

@@ -44,3 +44,5 @@
 - [ ] `api.Config` reads a single `api.properties` with no environment
   selection. Add a `-Denv` mechanism once a second environment exists;
   deliberately out of scope while there is only one.
+- [ ] When re-enabling Grid: refactor createRemoteDriver to accept (Browser, headless)
+  like the local path, not a new enum value.
