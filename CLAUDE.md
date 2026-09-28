@@ -72,8 +72,8 @@ Tests call Steps only, never Pages directly.
 when the caller needs more than one field.
 
 **API only:** clients return the raw Response. They do not deserialise and do
-not check status codes — tests assert on the status, and the steps layer
-converts the body to a model.
+not check status codes. Tests and glue assert on the status, then deserialise
+with `response.as(Model.class)`.
 
 ### Package layout
 
@@ -97,6 +97,7 @@ converts the body to a model.
 
 - `api`         — API clients, one per resource (e.g. `AccountClient`, `BookstoreClient`)
 - `api.models`  — request/response models and builders
+- `api.steps`   — `ApiSteps`, the shared API step layer used by both `api.tests` and `bdd`
 - `api.tests`   — API test classes, named `<Area>ApiTests`
 - `bdd` — Cucumber glue: runner, step definitions (`*StepDefs`), hooks and the
     scenario context. Feature files live in `src/test/resources/bdd/features/<area>/`,
@@ -174,10 +175,10 @@ is maintained manually.
 - **UI only:** constants holding values read from the page under test are
   named `EXPECTED_OUTPUT_<SCOPE>`. The name must make clear these are the
   application's internal values, not the labels shown in the UI.
-- Timestamp-based usernames are an accepted exception to the "no random values"
-  rule for API tests: the demoQA user registry is shared and global across all
-  users of the site, so a fixed username would eventually collide. The value
-  itself is never asserted on — only used to avoid collisions — so it does not
+- Usernames built from the thread name plus a timestamp are an accepted exception
+  to the "no random values" rule for API tests: the demoQA user registry is shared 
+  and global across all users of the site, so a fixed username would eventually collide. 
+  The value itself is never asserted on — only used to avoid collisions — so it does not
   compromise determinism of the test's outcome.
 
 ### Assertions
@@ -203,6 +204,7 @@ is maintained manually.
   (`LoggerFactory.getLogger(...)`).
 
 ### Parallel safety
+
 - Suites run with parallel="methods": TestNG shares one test-class instance across
   threads. Mutable instance fields in test classes must be thread-confined
   (ThreadLocal, cleared in @AfterMethod(alwaysRun = true)). A thread-safe collection
@@ -220,11 +222,13 @@ is maintained manually.
   (`XX-001` → `@smoke`, everything else → `@regression`), and `@api` or `@ui`.
 - Gherkin is written in the third person ("the user") and declaratively: describe
   behaviour, not UI mechanics or HTTP calls. `When the user adds a book to their
-  collection`, not `When the user clicks "Add"`. One `When` per scenario.
+  collection`, not `When the user clicks "Add"`. One `When` per scenario, except 
+  end-to-end journey test cases (e.g. BS-001),   which alternate 
+  `When` / `Then` — one pair per action. Actions never go into `Then` steps.
 - Step text is bound with Cucumber Expressions. Regular expressions only where
   they substantially simplify the binding.
 - Step definitions call `*Steps` / `ApiSteps` only — no locators, no WebElement,
-  no RestAssured calls, no response deserialisation. Missing behaviour is added
+  no RestAssured calls. Missing behaviour is added
   to the steps layer, not to glue.
 - Assertions only in `Then` steps, following the same rules as TestNG tests:
   API — hard `Assert`; UI — `SoftAssert`, where each `Then` step creates its own
