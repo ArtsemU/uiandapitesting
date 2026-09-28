@@ -223,7 +223,7 @@ is maintained manually.
 - Gherkin is written in the third person ("the user") and declaratively: describe
   behaviour, not UI mechanics or HTTP calls. `When the user adds a book to their
   collection`, not `When the user clicks "Add"`. One `When` per scenario, except 
-  end-to-end journey test cases (e.g. BS-001),   which alternate 
+  end-to-end journey test cases (e.g. BS-001), which alternate 
   `When` / `Then` — one pair per action. Actions never go into `Then` steps.
 - Step text is bound with Cucumber Expressions. Regular expressions only where
   they substantially simplify the binding.

@@ -2,6 +2,7 @@ package api.tests;
 
 import api.Config;
 import api.models.*;
+import api.steps.ApiSteps;
 import io.restassured.response.Response;
 
 import org.slf4j.Logger;
