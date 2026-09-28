@@ -12,25 +12,30 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.LinkedHashMap;
 
 
 public class BookApiTests {
     private static final Logger log = LoggerFactory.getLogger(BookApiTests.class);
     private final ApiSteps apiSteps = new ApiSteps();
     //private final Map<String, String> createdUsers = new LinkedHashMap<>();
-    private final Map<String, String> createdUsers = new ConcurrentHashMap<>();
+    // Per-thread: under parallel="methods" one instance serves many threads, so a shared map
+    // would let one test's cleanup delete users that another still-running test is using.
+    private final ThreadLocal<Map<String, String>> createdUsers = ThreadLocal.withInitial(LinkedHashMap::new);
 
     @AfterMethod(alwaysRun = true)
     public void cleanupUsers() {
-        for (Map.Entry<String, String> entry : createdUsers.entrySet()) {
-            try {
-                apiSteps.removeUser(entry.getKey(), entry.getValue());
-            } catch (Exception e) {
-                log.warn("Cleanup failed for user {}", entry.getKey(), e);
+        try {
+            for (Map.Entry<String, String> entry : createdUsers.get().entrySet()) {
+                try {
+                    apiSteps.removeUser(entry.getKey(), entry.getValue());
+                } catch (Exception e) {
+                    log.warn("Cleanup failed for user {}", entry.getKey(), e);
+                }
             }
+        } finally {
+            createdUsers.remove();
         }
-        createdUsers.clear();
     }
 
     @Test(priority = 1, testName = "BS-001: Add book to user", groups = {"smoke"})
@@ -119,7 +124,7 @@ public class BookApiTests {
         Response rsToken = apiSteps.generateToken(userCredentials);
         Assert.assertEquals(rsToken.statusCode(), 200, "Expected status : 200");
         Token token = rsToken.as(Token.class);
-        createdUsers.put(user.getUserID(), token.getToken());
+        createdUsers.get().put(user.getUserID(), token.getToken());
     }
 
     @Test(priority = 3, testName = "BS-003: empty userName is rejected", groups = {"regression"})
@@ -170,7 +175,7 @@ public class BookApiTests {
         Response rsToken = apiSteps.generateToken(userCredentials);
         Assert.assertEquals(rsToken.statusCode(), 200, "Expected status : 200");
         Token token = rsToken.as(Token.class);
-        createdUsers.put(user.getUserID(), token.getToken());
+        createdUsers.get().put(user.getUserID(), token.getToken());
 
         // last step is missed in conf. need discuss should I update test case or remove that last step?
         // I got his idea! to clean up data pairs name-token is required. Not bad
@@ -187,7 +192,7 @@ public class BookApiTests {
         Response rsToken = apiSteps.generateToken(userCredentials);
         Assert.assertEquals(rsToken.statusCode(), 200, "Precondition failed: token was not generated");
         Token token = rsToken.as(Token.class);
-        createdUsers.put(user.getUserID(), token.getToken());
+        createdUsers.get().put(user.getUserID(), token.getToken());
 
         log.info("Step #1 - call getUser for a fake userID with the valid token");
         Response rsInvalidUser = apiSteps.getUserData("1234567890", token.getToken());
@@ -221,7 +226,7 @@ public class BookApiTests {
         Response rsTokenA = apiSteps.generateToken(userACredentials);
         Assert.assertEquals(rsTokenA.statusCode(), 200, "Precondition failed: token for user A was not generated");
         Token tokenA = rsTokenA.as(Token.class);
-        createdUsers.put(userA.getUserID(), tokenA.getToken());
+        createdUsers.get().put(userA.getUserID(), tokenA.getToken());
 
         log.info("Step #1 - call getUser for user B with user A's token");
         Response rsUserBWithTokenA = apiSteps.getUserData(userB.getUserID(), tokenA.getToken());
@@ -233,7 +238,7 @@ public class BookApiTests {
         Response rsTokenB = apiSteps.generateToken(userBCredentials);
         Assert.assertEquals(rsTokenB.statusCode(), 200, "Expected status : 200");
         Token tokenB = rsTokenB.as(Token.class);
-        createdUsers.put(userB.getUserID(), tokenB.getToken());
+        createdUsers.get().put(userB.getUserID(), tokenB.getToken());
     }
 
     @Test(priority = 8, testName = "BS-008: add book not in catalogue is rejected", groups = {"regression"})
@@ -247,7 +252,7 @@ public class BookApiTests {
         Response rsToken = apiSteps.generateToken(userCredentials);
         Assert.assertEquals(rsToken.statusCode(), 200, "Precondition failed: token was not generated");
         Token token = rsToken.as(Token.class);
-        createdUsers.put(user.getUserID(), token.getToken());
+        createdUsers.get().put(user.getUserID(), token.getToken());
 
         log.info("Step #1 - call addBook with an ISBN not in the catalogue");
         String isbnNotInCatalogue = "1234567890";
@@ -275,7 +280,7 @@ public class BookApiTests {
         Response rsToken = apiSteps.generateToken(userCredentials);
         Assert.assertEquals(rsToken.statusCode(), 200, "Precondition failed: token was not generated");
         Token token = rsToken.as(Token.class);
-        createdUsers.put(user.getUserID(), token.getToken());
+        createdUsers.get().put(user.getUserID(), token.getToken());
 
         Response rsBooks = apiSteps.getAllBooks();
         Assert.assertEquals(rsBooks.statusCode(), 200, "Precondition failed: catalogue was not retrieved");
@@ -311,7 +316,7 @@ public class BookApiTests {
         Response rsToken = apiSteps.generateToken(userCredentials);
         Assert.assertEquals(rsToken.statusCode(), 200, "Precondition failed: token was not generated");
         Token token = rsToken.as(Token.class);
-        createdUsers.put(user.getUserID(), token.getToken());
+        createdUsers.get().put(user.getUserID(), token.getToken());
 
         Response rsBooks = apiSteps.getAllBooks();
         Assert.assertEquals(rsBooks.statusCode(), 200, "Precondition failed: catalogue was not retrieved");
@@ -338,7 +343,7 @@ public class BookApiTests {
         Response rsToken = apiSteps.generateToken(userCredentials);
         Assert.assertEquals(rsToken.statusCode(), 200, "Precondition failed: token was not generated");
         Token token = rsToken.as(Token.class);
-        createdUsers.put(user.getUserID(), token.getToken());
+        createdUsers.get().put(user.getUserID(), token.getToken());
 
         log.info("Step #1 - call removeAllBooks");
         Response rsRemoveAllBooks = apiSteps.removeAllBooksFromUser(user.getUserID(), token.getToken());
@@ -371,7 +376,7 @@ public class BookApiTests {
         Response rsToken = apiSteps.generateToken(userCredentials);
         Assert.assertEquals(rsToken.statusCode(), 200, "Expected status : 200");
         Token token = rsToken.as(Token.class);
-        createdUsers.put(user.getUserID(), token.getToken());
+        createdUsers.get().put(user.getUserID(), token.getToken());
     }
 
     @DataProvider(name = "invalidPasswords", parallel = true)
