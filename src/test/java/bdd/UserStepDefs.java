@@ -9,6 +9,7 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import io.restassured.response.Response;
 import org.testng.Assert;
+import testing.testdata.BookstoreTestData;
 
 public class UserStepDefs {
 
@@ -20,9 +21,17 @@ public class UserStepDefs {
         this.apiSteps = apiSteps;
     }
 
-    @When("a new user registers")
-    public void aNewUserRegisters() {
+    // Regex rather than a Cucumber Expression: one binding covers both phrasings,
+    // the password is null when the optional part is absent.
+    @When("^a new user registers(?: with the password \"([^\"]*)\")?$")
+    public void aNewUserRegisters(String password) {
         UserCredentials credentials = UserCredentials.unique();
+        if (password != null) {
+            credentials = UserCredentials.builder()
+                    .userName(credentials.getUserName())
+                    .password(password)
+                    .build();
+        }
         context.setCredentials(credentials);
         context.setLastResponse(apiSteps.createUserCall(credentials));
     }
@@ -36,6 +45,20 @@ public class UserStepDefs {
         context.setUserId(user.getUserID());
         context.recordCreatedUser(user.getUserID(), context.getCredentials());
         Assert.assertEquals(user.getBooks().size(), 0, "A newly registered user should have no books");
+    }
+
+    @Then("the registration is rejected for breaking the password rules")
+    public void theRegistrationIsRejectedForBreakingThePasswordRules() {
+        Response rs = context.getLastResponse();
+        if (rs.statusCode() == 201) {
+            // Unexpectedly created: hand the user to the cleanup hook before the assertion fails.
+            context.recordCreatedUser(rs.as(CreateUserResponse.class).getUserID(), context.getCredentials());
+        }
+        Assert.assertEquals(rs.statusCode(), 400, "A password breaking the rules should be rejected");
+        ErrorResponse error = rs.as(ErrorResponse.class);
+        Assert.assertEquals(error.getCode(), "1300", "A rejected password should report code 1300");
+        Assert.assertEquals(error.getMessage(), BookstoreTestData.PASSWORD_RULES_MESSAGE,
+                "A rejected password should report the password-rules message");
     }
 
     @When("the user logs in")

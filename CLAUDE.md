@@ -90,8 +90,8 @@ with `response.as(Model.class)`.
 `src/test/java`
 
 - `testing.ui`       — test classes, extend BaseUITest
-- `testing.testdata` — constants only, one class per module, named
-  `<Module>TestData`
+- `testing.testdata` — constants only, one class per module (UI and API alike),
+  named `<Module>TestData`
 
 `src/test/java` also holds the API layer:
 
@@ -215,7 +215,9 @@ is maintained manually.
 - Cucumber 7.x through `cucumber-testng`, with PicoContainer for dependency
   injection. All Cucumber artifacts take their version from `cucumber-bom` — one
   version to pin, never per-artifact versions.
-- Scenarios duplicate existing test cases; the TestNG tests stay as they are.
+- Scenarios duplicate existing test cases; they never replace TestNG tests or
+  change their behaviour. Expected values shared by both are extracted to
+  `testing.testdata` and used from both sides — no duplicated literals.
   Every scenario implements an existing Confluence test case — never invent one.
 - Tags replace `priority` / `testName` / `groups`: each scenario carries its test
   case ID (`@BS-001`), `@smoke` or `@regression` by the same rule as TestNG groups
@@ -282,6 +284,17 @@ and `-Dbrowser=CHROME|EDGE|SAFARI` (default `CHROME`). Any suite run against
 - Clean up after yourself within a task: scratch files, draft
   implementations, or debug fragments created while iterating toward a
   solution are removed before the task is considered done.
+
+### Decisions
+
+- Decide small, reversible choices yourself — naming, where a constant lives,
+  a literal-to-constant refactor, which of two equivalent structures to use.
+  State each such choice in one line in your summary so it can be reviewed.
+- Stop and ask only when: a spec and the code disagree; a dependency would be
+  added or changed; a rule in this file would have to be broken; or the change
+  is hard to undo.
+- After changing code outside the task's own scope, run the affected existing
+  suite and report the result.
 
 ### Sandbox package
 

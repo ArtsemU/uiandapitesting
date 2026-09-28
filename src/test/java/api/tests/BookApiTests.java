@@ -11,6 +11,7 @@ import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
+import testing.testdata.BookstoreTestData;
 
 import java.util.Map;
 import java.util.LinkedHashMap;
@@ -403,8 +404,7 @@ public class BookApiTests {
         Assert.assertEquals(rs.statusCode(), 400, "Password " + violation + " should be rejected");
         ErrorResponse errorResponse = rs.as(ErrorResponse.class);
         Assert.assertEquals(errorResponse.getCode(), "1300", "Password " + violation + " should report code 1300");
-        Assert.assertEquals(errorResponse.getMessage(),
-                "Passwords must have at least one non alphanumeric character, one digit ('0'-'9'), one uppercase ('A'-'Z'), one lowercase ('a'-'z'), one special character and Password must be eight characters or longer.",
+        Assert.assertEquals(errorResponse.getMessage(), BookstoreTestData.PASSWORD_RULES_MESSAGE,
                 "Password " + violation + " should report the password-rules message");
     }
 }
