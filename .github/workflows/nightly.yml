@@ -18,6 +18,7 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+          cache: 'maven'
 
       - name: Run UI regression suite (headless)
         run: mvn -B test -DsuiteXmlFile=src/test/resources/suite/ui_regression.xml -Dheadless=true

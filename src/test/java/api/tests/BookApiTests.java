@@ -5,6 +5,7 @@ import api.models.*;
 import api.steps.ApiSteps;
 import io.restassured.response.Response;
 
+import org.hamcrest.MatcherAssert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.Assert;
@@ -15,6 +16,8 @@ import testing.testdata.BookstoreTestData;
 
 import java.util.Map;
 import java.util.LinkedHashMap;
+
+import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
 
 
 public class BookApiTests {
@@ -68,6 +71,8 @@ public class BookApiTests {
         log.info("Step #4 - get all Books");
         Response rsBooks = apiSteps.getAllBooks();
         Assert.assertEquals(rsBooks.statusCode(), 200, "Expected status : 200");
+        MatcherAssert.assertThat("Catalogue response does not match the Books schema",
+                rsBooks.asString(), matchesJsonSchemaInClasspath(BookstoreTestData.BOOKS_SCHEMA));
         Books books = rsBooks.as(Books.class);
         Assert.assertFalse(books.getBooks().isEmpty(), "Catalogue should not be empty");
 
@@ -82,6 +87,8 @@ public class BookApiTests {
         log.info("Step #7 - get user data");
         Response userAfterAddBookRs = apiSteps.getUserData(user.getUserID(), token.getToken());
         Assert.assertEquals(userAfterAddBookRs.statusCode(), 200, "Expected status : 200");
+        MatcherAssert.assertThat("Get user response does not match the User schema",
+                userAfterAddBookRs.asString(), matchesJsonSchemaInClasspath(BookstoreTestData.USER_SCHEMA));
         UserInfo userAfterAdd = userAfterAddBookRs.as(UserInfo.class);
         Assert.assertEquals(userAfterAdd.getBooks().size(), 1, "User should have exactly one book");
         Assert.assertEquals(userAfterAdd.getBooks().get(0), books.getBooks().get(0),
