@@ -246,6 +246,8 @@ is maintained manually.
   scenario context. A failed cleanup is logged and never fails the scenario.
 - BDD runs through its own suite XML in `src/test/resources/suite/`, not through
   the root `testng.xml`.
+- A scenario may cover a subset of its test case's checks; do not extend a
+  scenario to match its spec unless asked.
 
 ## CI/CD
 
