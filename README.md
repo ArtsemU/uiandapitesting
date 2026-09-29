@@ -102,7 +102,7 @@ GitHub Actions workflows (`.github/workflows/`):
   gating, placeholder deploy step — there is no real deploy target).
 - **`nightly.yml`** — scheduled full regression run, independent of any
   push/PR/merge event, including the Cucumber suite in parallel
-  (`bdd_parallel.xml`). Also runs `bdd_parallel.xml` (headless).
+  (`bdd_parallel.xml`). Also runs `bdd_parallel.xml` (headless). 
 
 All UI steps in every workflow pass `-Dheadless=true` — GitHub's runners
 have no display, so a UI suite run without this flag fails immediately on
