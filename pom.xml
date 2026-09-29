@@ -16,6 +16,7 @@
     <maven.compiler.source>17</maven.compiler.source>
     <maven.compiler.target>17</maven.compiler.target>
     <suiteXmlFile>testng.xml</suiteXmlFile>
+    <rest-assured.version>6.0.0</rest-assured.version>
   </properties>
 
     <dependencyManagement>
@@ -63,7 +64,16 @@
     <dependency>
       <groupId>io.rest-assured</groupId>
       <artifactId>rest-assured</artifactId>
-      <version>6.0.0</version>
+      <version>${rest-assured.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- JSON Schema validation for RestAssured responses (draft-04 only) -->
+    <!-- Source: https://mvnrepository.com/artifact/io.rest-assured/json-schema-validator -->
+    <dependency>
+      <groupId>io.rest-assured</groupId>
+      <artifactId>json-schema-validator</artifactId>
+      <version>${rest-assured.version}</version>
       <scope>test</scope>
     </dependency>
 
