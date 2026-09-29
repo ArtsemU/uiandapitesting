@@ -103,6 +103,8 @@ with `response.as(Model.class)`.
     scenario context. Feature files live in `src/test/resources/bdd/features/<area>/`,
     not under `src/test/java` — Maven does not copy non-Java files from there onto
     the test classpath.
+- `src/test/resources/schemas/` — JSON Schemas for API responses
+  (`<resource>-schema.json`).
 
 Unlike `ui.models`, `api.models` lives under `src/test/java` rather than
 `src/main/java` — API code has no main-source caller that needs to compile
@@ -195,6 +197,9 @@ is maintained manually.
 - Test case pages follow a Preconditions / Steps / Expected result structure.
   Checks in the Preconditions block are assertions that must stop the test —
   use a hard Assert for those.
+- API schema checks use draft-04 JSON Schema only — the RestAssured validator
+  silently ignores keywords from newer drafts. Order per response: status assert,
+  then schema, then deserialisation.
 
 ### Logging
 
