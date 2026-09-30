@@ -23,7 +23,12 @@ Java 17, Maven, TestNG, Selenium 4, WebDriverManager, SLF4J + Log4j2.
 - Suite XML files for scoped or parallel runs (sandbox, API-only, UI-only)
   live in `src/test/resources/suite/`. Run them directly via an IDE run
   configuration pointing at the file — they are not wired into `mvn test`,
-  which still uses the root `testng.xml`.
+  which still uses the root `testng.xml`. Also runs the API suite a second 
+  time with `-Dstub.catalogue.wiremock=true
+-Dstub.catalogue.mockito=true`.
+- Every key in `api.properties` can be overridden with a JVM system property of
+  the same name (`-Dkey=value`); a blank value counts as not set. Boolean keys
+  accept only `true` or `false`.
 
 ## Architecture
 
@@ -92,6 +97,8 @@ with `response.as(Model.class)`.
 - `testing.ui`       — test classes, extend BaseUITest
 - `testing.testdata` — constants only, one class per module (UI and API alike),
   named `<Module>TestData`
+- `api.support` — test support for API tests that is neither a client, a model
+  nor a step (e.g. `CatalogueStub`, the switchable catalogue stubs)
 
 `src/test/java` also holds the API layer:
 
