@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<!-- Load-testing learning example (JMeter DSL). Hits the real demoQA API: run manually, never from CI. -->
+<suite name="Performance Suite">
+    <test name="Bookstore load">
+        <classes>
+            <class name="performance.BookstoreLoadTest"/>
+        </classes>
+    </test>
+</suite>
