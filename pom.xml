@@ -122,6 +122,25 @@
       </exclusions>
     </dependency>
 
+    <!-- Gatling (load-testing learning example, see performance.BookstoreGatlingSimulation) -->
+    <!-- Source: https://mvnrepository.com/artifact/io.gatling.highcharts/gatling-charts-highcharts -->
+    <dependency>
+      <groupId>io.gatling.highcharts</groupId>
+      <artifactId>gatling-charts-highcharts</artifactId>
+      <version>3.16.0</version>
+      <scope>test</scope>
+      <exclusions>
+        <!-- Gatling brings Logback, a second SLF4J provider next to log4j-slf4j2-impl. Logback
+             comes first on the classpath, so it would take over logging for every suite and
+             ignore log4j2.xml (thousands of DEBUG lines per run). Gatling logs through SLF4J,
+             so it runs on Log4j2 just the same. -->
+        <exclusion>
+          <groupId>ch.qos.logback</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
     <!-- Log4j2 -->
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
@@ -171,6 +190,17 @@
           <suiteXmlFiles>
             <suiteXmlFile>${suiteXmlFile}</suiteXmlFile>
           </suiteXmlFiles>
+        </configuration>
+      </plugin>
+      <!-- Gatling: no <executions>, so it is not bound to any lifecycle phase and never runs
+           during `mvn test`. Invoke explicitly: mvn gatling:test -->
+      <!-- Source: https://mvnrepository.com/artifact/io.gatling/gatling-maven-plugin -->
+      <plugin>
+        <groupId>io.gatling</groupId>
+        <artifactId>gatling-maven-plugin</artifactId>
+        <version>4.21.12</version>
+        <configuration>
+          <simulationClass>performance.BookstoreGatlingSimulation</simulationClass>
         </configuration>
       </plugin>
     </plugins>
