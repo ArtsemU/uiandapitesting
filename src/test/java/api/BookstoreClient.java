@@ -12,9 +12,22 @@ import io.restassured.response.Response;
  */
 public class BookstoreClient {
 
+    // Base URL for the catalogue call only; overrides the one in ApiSpec.SPEC per request,
+    // so it is confined to this instance and safe under parallel runs.
+    private final String catalogueBaseUrl;
+
+    public BookstoreClient() {
+        this(Config.baseUrl());
+    }
+
+    public BookstoreClient(String catalogueBaseUrl) {
+        this.catalogueBaseUrl = catalogueBaseUrl;
+    }
+
     public Response getAllBooks() {
         return RestAssured.given()
                 .spec(ApiSpec.SPEC)
+                .baseUri(catalogueBaseUrl)
                 .get("/BookStore/v1/Books");
     }
 

@@ -13,7 +13,22 @@ import java.util.List;
 public class ApiSteps {
 
     private AccountClient accountClient = new AccountClient();
-    private BookstoreClient  bookstoreClient = new BookstoreClient();
+    private BookstoreClient  bookstoreClient;
+
+    public ApiSteps() {
+        this.bookstoreClient = new BookstoreClient();
+    }
+
+    // Private on purpose: PicoContainer (BDD glue) only sees public constructors, and a public
+    // ApiSteps(String) would make it try to inject a String. Use withCatalogueBaseUrl(...).
+    private ApiSteps(String catalogueBaseUrl) {
+        this.bookstoreClient = new BookstoreClient(catalogueBaseUrl);
+    }
+
+    // Catalogue (getAllBooks) is read from the given base URL; every other call uses api.properties.
+    public static ApiSteps withCatalogueBaseUrl(String catalogueBaseUrl) {
+        return new ApiSteps(catalogueBaseUrl);
+    }
 
     public Response createUserCall(UserCredentials uc) {
         return accountClient.createUser(uc);
