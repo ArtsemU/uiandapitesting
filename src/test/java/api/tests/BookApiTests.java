@@ -3,9 +3,15 @@ package api.tests;
 import api.Config;
 import api.models.*;
 import api.steps.ApiSteps;
+import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
+import io.restassured.builder.ResponseBuilder;
+import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 
 import org.hamcrest.MatcherAssert;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.Assert;
@@ -278,67 +284,107 @@ public class BookApiTests {
         Assert.assertEquals(userInfo.getBooks().size(), 0, "Books should remain empty after a rejected add");
     }
 
+    // Learning example: HTTP-level stub with WireMock. Emulates GET /BookStore/v1/Books
+    // being unavailable by serving the catalogue from a local WireMock server with one
+    // book (fake fields, real ISBN); every other call still goes to the real demoQA.
+    // The catalogue only supplies an ISBN that demoQA accepts for adding, so the stub
+    // does not change what this test verifies.
     @Test(priority = 9, testName = "BS-009: add same book twice is rejected", groups = {"regression"})
     public void addSameBookTwiceIsRejectedTest() {
-        log.info("Precondition - create user, authenticate, add one book");
-        UserCredentials userCredentials = UserCredentials.unique();
-        Response rs = apiSteps.createUserCall(userCredentials);
-        Assert.assertEquals(rs.statusCode(), 201, "Precondition failed: user was not created");
-        CreateUserResponse user = rs.as(CreateUserResponse.class);
+        // Emulated outage: GET /BookStore/v1/Books is treated as unavailable, so the catalogue
+        // call is answered by a local WireMock server instead of demoQA. Every other call is real.
+        WireMockServer wireMockServer = new WireMockServer(WireMockConfiguration.options().dynamicPort());
+        wireMockServer.start();
+        try {
+            wireMockServer.stubFor(WireMock.get(WireMock.urlPathEqualTo(BookstoreTestData.CATALOGUE_PATH))
+                    .willReturn(WireMock.okJson(BookstoreTestData.STUBBED_CATALOGUE_REAL_ISBN_BODY)));
+            ApiSteps apiStepsWithStubbedCatalogue = ApiSteps.withCatalogueBaseUrl(wireMockServer.baseUrl());
 
-        Response rsToken = apiSteps.generateToken(userCredentials);
-        Assert.assertEquals(rsToken.statusCode(), 200, "Precondition failed: token was not generated");
-        Token token = rsToken.as(Token.class);
-        createdUsers.get().put(user.getUserID(), token.getToken());
+            log.info("Precondition - create user, authenticate, add one book");
+            UserCredentials userCredentials = UserCredentials.unique();
+            Response rs = apiStepsWithStubbedCatalogue.createUserCall(userCredentials);
+            Assert.assertEquals(rs.statusCode(), 201, "Precondition failed: user was not created");
+            CreateUserResponse user = rs.as(CreateUserResponse.class);
 
-        Response rsBooks = apiSteps.getAllBooks();
-        Assert.assertEquals(rsBooks.statusCode(), 200, "Precondition failed: catalogue was not retrieved");
-        Books books = rsBooks.as(Books.class);
-        Assert.assertFalse(books.getBooks().isEmpty(), "Precondition failed: catalogue is empty");
-        String isbn = books.getBooks().get(0).getIsbn();
+            Response rsToken = apiStepsWithStubbedCatalogue.generateToken(userCredentials);
+            Assert.assertEquals(rsToken.statusCode(), 200, "Precondition failed: token was not generated");
+            Token token = rsToken.as(Token.class);
+            createdUsers.get().put(user.getUserID(), token.getToken());
 
-        Response rsAddBook = apiSteps.addBookToUser(user.getUserID(), isbn, token.getToken());
-        Assert.assertEquals(rsAddBook.statusCode(), 201, "Precondition failed: book was not added");
+            Response rsBooks = apiStepsWithStubbedCatalogue.getAllBooks();
+            Assert.assertEquals(rsBooks.statusCode(), 200, "Precondition failed: catalogue was not retrieved");
+            MatcherAssert.assertThat("Precondition failed: stubbed catalogue does not match the Books schema",
+                    rsBooks.asString(), matchesJsonSchemaInClasspath(BookstoreTestData.BOOKS_SCHEMA));
+            Books books = rsBooks.as(Books.class);
+            Assert.assertFalse(books.getBooks().isEmpty(), "Precondition failed: catalogue is empty");
+            String isbn = books.getBooks().get(0).getIsbn();
 
-        log.info("Step #1 - call addBook with the same ISBN again");
-        Response rsAddBookAgain = apiSteps.addBookToUser(user.getUserID(), isbn, token.getToken());
-        Assert.assertEquals(rsAddBookAgain.statusCode(), 400, "Adding a duplicate ISBN should be rejected");
-        ErrorResponse errorResponse = rsAddBookAgain.as(ErrorResponse.class);
-        Assert.assertEquals(errorResponse.getCode(), "1210", "Adding a duplicate ISBN should report code 1210");
-        Assert.assertEquals(errorResponse.getMessage(), "ISBN already present in the User's Collection!", "Adding a duplicate ISBN should report the correct message");
+            Response rsAddBook = apiStepsWithStubbedCatalogue.addBookToUser(user.getUserID(), isbn, token.getToken());
+            Assert.assertEquals(rsAddBook.statusCode(), 201, "Precondition failed: book was not added");
 
-        log.info("Step #2 - call getUser");
-        Response rsUserData = apiSteps.getUserData(user.getUserID(), token.getToken());
-        Assert.assertEquals(rsUserData.statusCode(), 200, "Expected status : 200");
-        UserInfo userInfo = rsUserData.as(UserInfo.class);
-        Assert.assertEquals(userInfo.getBooks().size(), 1, "Books should contain exactly one element after a rejected duplicate add");
+            log.info("Step #1 - call addBook with the same ISBN again");
+            Response rsAddBookAgain = apiStepsWithStubbedCatalogue.addBookToUser(user.getUserID(), isbn, token.getToken());
+            Assert.assertEquals(rsAddBookAgain.statusCode(), 400, "Adding a duplicate ISBN should be rejected");
+            ErrorResponse errorResponse = rsAddBookAgain.as(ErrorResponse.class);
+            Assert.assertEquals(errorResponse.getCode(), "1210", "Adding a duplicate ISBN should report code 1210");
+            Assert.assertEquals(errorResponse.getMessage(), "ISBN already present in the User's Collection!", "Adding a duplicate ISBN should report the correct message");
+
+            log.info("Step #2 - call getUser");
+            Response rsUserData = apiStepsWithStubbedCatalogue.getUserData(user.getUserID(), token.getToken());
+            Assert.assertEquals(rsUserData.statusCode(), 200, "Expected status : 200");
+            UserInfo userInfo = rsUserData.as(UserInfo.class);
+            Assert.assertEquals(userInfo.getBooks().size(), 1, "Books should contain exactly one element after a rejected duplicate add");
+
+            wireMockServer.verify(1, WireMock.getRequestedFor(WireMock.urlPathEqualTo(BookstoreTestData.CATALOGUE_PATH)));
+        } finally {
+            wireMockServer.stop();
+        }
     }
 
+    // Learning example: Java-level stub with Mockito. Emulates GET /BookStore/v1/Books
+    // being unavailable by stubbing ApiSteps.getAllBooks() with one fake book; every
+    // other call on the spy still goes to the real demoQA. The catalogue only supplies
+    // an ISBN absent from the user's collection, so the stub does not change what this
+    // test verifies.
     @Test(priority = 10, testName = "BS-010: remove book not in collection is rejected", groups = {"regression"})
     public void removeBookNotInCollectionIsRejectedTest() {
+        // Emulated outage: GET /BookStore/v1/Books is treated as unavailable, so the catalogue
+        // call is answered by a stub instead of demoQA. Every other call on the spy is real.
+        ApiSteps apiStepsSpy = Mockito.spy(apiSteps);
+        Response stubbedCatalogue = new ResponseBuilder()
+                .setStatusCode(200)
+                .setContentType(ContentType.JSON)
+                .setBody(BookstoreTestData.STUBBED_CATALOGUE_BODY)
+                .build();
+        Mockito.doReturn(stubbedCatalogue).when(apiStepsSpy).getAllBooks();
+
         log.info("Precondition - create user, authenticate, empty collection");
         UserCredentials userCredentials = UserCredentials.unique();
-        Response rs = apiSteps.createUserCall(userCredentials);
+        Response rs = apiStepsSpy.createUserCall(userCredentials);
         Assert.assertEquals(rs.statusCode(), 201, "Precondition failed: user was not created");
         CreateUserResponse user = rs.as(CreateUserResponse.class);
 
-        Response rsToken = apiSteps.generateToken(userCredentials);
+        Response rsToken = apiStepsSpy.generateToken(userCredentials);
         Assert.assertEquals(rsToken.statusCode(), 200, "Precondition failed: token was not generated");
         Token token = rsToken.as(Token.class);
         createdUsers.get().put(user.getUserID(), token.getToken());
 
-        Response rsBooks = apiSteps.getAllBooks();
+        Response rsBooks = apiStepsSpy.getAllBooks();
         Assert.assertEquals(rsBooks.statusCode(), 200, "Precondition failed: catalogue was not retrieved");
+        MatcherAssert.assertThat("Precondition failed: stubbed catalogue does not match the Books schema",
+                rsBooks.asString(), matchesJsonSchemaInClasspath(BookstoreTestData.BOOKS_SCHEMA));
         Books books = rsBooks.as(Books.class);
         Assert.assertFalse(books.getBooks().isEmpty(), "Precondition failed: catalogue is empty");
         String isbn = books.getBooks().get(0).getIsbn();
 
         log.info("Step #1 - call removeBook with an ISBN from the catalogue that is not in the collection");
-        Response rsRemoveBook = apiSteps.removeBook(user.getUserID(), isbn, token.getToken());
+        Response rsRemoveBook = apiStepsSpy.removeBook(user.getUserID(), isbn, token.getToken());
         Assert.assertEquals(rsRemoveBook.statusCode(), 400, "Removing a book absent from the collection should be rejected");
         ErrorResponse errorResponse = rsRemoveBook.as(ErrorResponse.class);
         Assert.assertEquals(errorResponse.getCode(), "1206", "Removing an absent book should report code 1206");
         Assert.assertEquals(errorResponse.getMessage(), "ISBN supplied is not available in User's Collection!", "Removing an absent book should report the correct message");
+
+        Mockito.verify(apiStepsSpy).getAllBooks();
     }
 
     @Test(priority = 11, testName = "BS-011: clear an empty collection", groups = {"regression"})
