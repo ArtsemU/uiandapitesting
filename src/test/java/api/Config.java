@@ -24,6 +24,14 @@ public final class Config {
         return getRequired("user.password");
     }
 
+    public static boolean stubCatalogueWireMock() {
+        return getRequiredBoolean("stub.catalogue.wiremock");
+    }
+
+    public static boolean stubCatalogueMockito() {
+        return getRequiredBoolean("stub.catalogue.mockito");
+    }
+
     private static Properties load() {
         Properties props = new Properties();
 
@@ -39,13 +47,29 @@ public final class Config {
         return props;
     }
 
+    // A JVM system property of the same name (-Dkey=value) overrides the file.
+    // A blank system property counts as not set.
     private static String getRequired(String key) {
-        String value = properties.getProperty(key);
+        String override = System.getProperty(key);
+        String value = override == null || override.isBlank() ? properties.getProperty(key) : override;
 
         if (value == null || value.isBlank()) {
             throw new IllegalStateException("Missing required key '" + key + "' in " + CONFIG_FILE);
         }
 
         return value;
+    }
+
+    // Strict on purpose: Boolean.parseBoolean would silently read a typo as false.
+    private static boolean getRequiredBoolean(String key) {
+        String value = getRequired(key).trim();
+
+        if (value.equalsIgnoreCase("true")) {
+            return true;
+        }
+        if (value.equalsIgnoreCase("false")) {
+            return false;
+        }
+        throw new IllegalStateException("Invalid value '" + value + "' for key '" + key + "': expected true or false");
     }
 }
