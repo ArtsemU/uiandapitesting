@@ -317,6 +317,21 @@ and `-Dbrowser=CHROME|EDGE|SAFARI` (default `CHROME`). Any suite run against
   to this file's conventions. Corresponding suite XML files live under
   `suite/`. Stays in the repo by design, not something to "clean up".
 
+### Lessons-learned package
+
+- `src/test/java/lessonslearned` holds exercises based on interview feedback —
+  practice, not tests of the application.
+- No rule in this file applies there unless a prompt explicitly asks for it.
+  Do not refactor, restyle, rename or "fix" code in it to match project
+  conventions, and leave it out of repo-wide changes, reviews and audits unless
+  asked.
+- One exception: if a change elsewhere breaks compilation in this package, make
+  the minimal fix that keeps it compiling and say so in the summary — it lives
+  in the test sources, so a compile error there breaks every `mvn test` run.
+- Its suite XML files, if any, live under `src/test/resources/suite/` and are not
+  wired into CI.
+- Stays in the repo by design; the Cleanup rule does not apply to it.
+
 ### Generated output
 
 - Anything longer than a few lines goes to a file, not the chat — unless the prompt
