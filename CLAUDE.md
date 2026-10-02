@@ -1,354 +1,220 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code
-in this repository.
+Guidance for Claude Code when working in this repository.
 
 ## Project overview
 
-A Java/Selenium UI and RestAssured API test automation project (hence the project
-name `uiandapitesting`).
-
-Page Object Model suites cover three demoQA pages: Text Box, Check Box and Web
-Tables. API tests cover the demoQA Bookstore API (`BookApiTests`).
-
-Java 17, Maven, TestNG, Selenium 4, WebDriverManager, SLF4J + Log4j2.
+Java/Selenium UI and RestAssured API test automation against demoQA: Page Object
+suites for Text Box, Check Box and Web Tables; API tests for the Bookstore API
+(`BookApiTests`). Java 17, Maven, TestNG, Selenium 4, SLF4J + Log4j2.
 
 ## Build and test commands
 
-- Compile: `mvn compile`
-- Run tests: `mvn test` — runs the suite defined in `testng.xml` at the project
-  root, wired through `maven-surefire-plugin`.
-- Run a single class from the IDE: use the TestNG run configuration for the class.
-- Run a single class from the CLI: `mvn test -Dtest=TextBoxTest`.
-- Suite XML files for scoped or parallel runs (sandbox, API-only, UI-only)
-  live in `src/test/resources/suite/`. Run them directly via an IDE run
-  configuration pointing at the file — they are not wired into `mvn test`,
-  which still uses the root `testng.xml`. Also runs the API suite a second 
-  time with `-Dstub.catalogue.wiremock=true
--Dstub.catalogue.mockito=true`.
+- `mvn test` runs the suite in the root `testng.xml`.
+- Scoped and parallel suites live in `src/test/resources/suite/` and are not
+  wired into `mvn test`; run one with `-DsuiteXmlFile=<path>`.
 - Every key in `api.properties` can be overridden with a JVM system property of
   the same name (`-Dkey=value`); a blank value counts as not set. Boolean keys
   accept only `true` or `false`.
+- UI runs take `-Dheadless=true|false` (default false) and
+  `-Dbrowser=CHROME|EDGE|SAFARI` (default CHROME), read directly by
+  `WebDriverFactory`, not by `pom.xml`. Any UI suite on CI (no display) must pass
+  `-Dheadless=true`.
 
 ## Architecture
 
 Three layers, driven strictly top-down: **Tests → Steps → Pages → BasePage**.
 Tests call Steps only, never Pages directly.
 
-### Layers
-
-- `factory.WebDriverFactory` — creates the `WebDriver` instance. `Browser` enum
-  (`CHROME`, `EDGE`, `SAFARI`) selects the driver; WebDriverManager resolves driver
-  binaries automatically. Headless mode and browser selection are controlled by
-  the `headless` and `browser` JVM system properties (see CI/CD section below) —
-  read directly by this code via `System.getProperty(...)`, unrelated to
-  `pom.xml`'s `suiteXmlFile` property. Default behavior (no properties passed) is
-  a visible Chrome window, unchanged from before these switches existed.
-- `ui.pages.BasePage` — shared Selenium plumbing: `click`, `sendKeys`, `getText`,
-  `isDisplayed`, `waitForPageLoad`, all built on an explicit `WebDriverWait` with a
-  10-second timeout. Element interaction in page objects goes through these helpers
-  rather than calling WebElement methods directly, so waits stay consistent.
-- `ui.pages.*Page` — page objects. Hold `By` locators as private fields, expose
-  action and getter methods. No assertions.
-- `ui.steps.BaseSteps` — shared `openUrl(String)` helper.
-- `ui.steps.*Steps` — compose page objects into business-level actions. This is the
-  layer tests interact with. Step methods own SLF4J logging for key actions.
-- `ui.models.*` — domain objects and their builders (e.g. `WebTableRecord`).
-- `testing.ui.BaseUITest` — TestNG base class. `@BeforeMethod(alwaysRun = true)`
-  creates a `WebDriver` via `WebDriverFactory`, maximizes the window (skipped when
-  headless, except for Safari), and instantiates the relevant `*Steps` objects,
-  each held in a `ThreadLocal` so parallel test methods don't share a browser
-  instance. `@AfterMethod(alwaysRun = true)` quits the driver and clears each
-  `ThreadLocal`. `alwaysRun = true` is required on both: group-filtered suites
-  (e.g. `ui_smoke.xml`) would otherwise silently skip these configuration methods,
-  since TestNG's group filter applies to `@BeforeMethod`/`@AfterMethod` too, not
-  just to `@Test` methods.
-- `testing.ui.*Test` — test classes. Call `*Steps` methods only, hold all
-  assertions. No helper methods: anything reusable belongs in the steps layer.
+- Pages hold `By` locators as private fields and expose actions and getters. No
+  assertions. Element interaction goes through the `BasePage` helpers, not
+  `WebElement` methods directly, so waits stay consistent.
+- Steps compose page objects into business-level actions and own SLF4J logging.
+  No assertions, no `By`, `WebElement` or driver access.
+- Tests call Steps only and hold all assertions. No helper methods: anything
+  reusable belongs in the steps layer.
+- Test configuration methods (`@BeforeMethod` / `@AfterMethod`) carry
+  `alwaysRun = true`: group-filtered suites skip them otherwise, and for cleanup
+  that failure is silent.
 
 ### Layer boundaries
 
 - Objects built through a builder are passed whole. Never unpack them into
   positional parameters at a layer boundary.
 - Type conversion between the domain type and the string form the DOM uses lives
-  in the page layer only. Steps, tests and models never see the string form.
+  in the page layer only.
+- **UI only:** page objects return domain objects, not individual cell values,
+  when the caller needs more than one field.
+- **API only:** clients return the raw Response. They do not deserialise and do
+  not check status codes. Tests and glue assert on the status, then deserialise
+  with `response.as(Model.class)`.
 
-**UI only:** page objects return domain objects, not individual cell values,
-when the caller needs more than one field.
+### Where things go
 
-**API only:** clients return the raw Response. They do not deserialise and do
-not check status codes. Tests and glue assert on the status, then deserialise
-with `response.as(Model.class)`.
+`src/main/java`:
+- `factory`, `ui.pages`, `ui.steps`, `ui.models`. `ui.models` (domain objects and
+  builders, never constants) is in main sources because pages and steps accept
+  and return them, and main sources cannot compile against test classes.
 
-### Package layout
-
-`src/main/java`
-
-- `factory`   — WebDriverFactory, Browser enum
-- `ui.pages`  — page objects, extend BasePage
-- `ui.steps`  — step layer, extends BaseSteps
-- `ui.models` — domain objects and builders. Never constants.
-  These live under `src/main/java` rather than `src/test/java` because `ui.pages`
-  and `ui.steps` accept and return them directly, and main sources cannot compile
-  against test-scope classes.
-
-`src/test/java`
-
-- `testing.ui`       — test classes, extend BaseUITest
+`src/test/java`:
+- `testing.ui` — UI test classes, extend `BaseUITest`.
 - `testing.testdata` — constants only, one class per module (UI and API alike),
-  named `<Module>TestData`
-- `api.support` — test support for API tests that is neither a client, a model
-  nor a step (e.g. `CatalogueStub`, the switchable catalogue stubs)
+  named `<Module>TestData`. Never in the same package as the tests.
+- `api` — clients, one per resource; `api.models` — request/response models;
+  `api.steps` — `ApiSteps`, shared by `api.tests` and `bdd`; `api.tests` —
+  `<Area>ApiTests`; `api.support` — test support that is neither a client, a
+  model nor a step (e.g. `CatalogueStub`).
+- `bdd` — Cucumber runner, step definitions (`*StepDefs`), hooks, scenario
+  context.
+- `performance` — load-test examples (JMeter DSL, Gatling). Gatling runs only
+  through `mvn gatling:test`, never in the normal test lifecycle.
 
-`src/test/java` also holds the API layer:
-
-- `api`         — API clients, one per resource (e.g. `AccountClient`, `BookstoreClient`)
-- `api.models`  — request/response models and builders
-- `api.steps`   — `ApiSteps`, the shared API step layer used by both `api.tests` and `bdd`
-- `api.tests`   — API test classes, named `<Area>ApiTests`
-- `bdd` — Cucumber glue: runner, step definitions (`*StepDefs`), hooks and the
-    scenario context. Feature files live in `src/test/resources/bdd/features/<area>/`,
-    not under `src/test/java` — Maven does not copy non-Java files from there onto
-    the test classpath.
-- `src/test/resources/schemas/` — JSON Schemas for API responses
-  (`<resource>-schema.json`).
-
-Unlike `ui.models`, `api.models` lives under `src/test/java` rather than
-`src/main/java` — API code has no main-source caller that needs to compile
-against it.
-
-Test data classes never live in the same package as the test classes.
-
-### Adding a new page under test
-
-1. `<Foo>Page` in `ui.pages`, extending `BasePage`.
-2. `<Foo>Steps` in `ui.steps`, extending `BaseSteps`, wrapping the page and wired up
-   in `BaseUITest`.
-3. `<Foo>Record` or similar in `ui.models`, if the page has structured data.
-4. `<Foo>Test` in `testing.ui`, extending `BaseUITest`.
-5. Constants in `testing.testdata`, if the test needs fixed expected values.
+`src/test/resources`:
+- `bdd/features/<area>/` — feature files. Not under `src/test/java`: Maven does
+  not copy non-Java files from there onto the test classpath.
+- `schemas/` — JSON Schemas for API responses (`<resource>-schema.json`).
 
 ## Test specifications
 
 Test cases live in Confluence, space `Uiandapite`, under **Test Project**:
+**demoQA** (UI) and **API**. Read the relevant page before writing or changing a
+test. Do not invent scenarios — if a spec is missing, ambiguous or incomplete,
+say so and ask.
 
-- **demoQA** — UI test specifications
-- **API** — API test specifications
-
-Read the relevant page before writing or changing a test. Do not invent scenarios
-that are not in the specification — if a spec is missing, ambiguous or incomplete,
-say so and ask rather than filling the gap.
-
-Confluence is read-only. Never create, update or delete pages there. Documentation
-is maintained manually.
+Confluence is read-only. Never create, update or delete pages there.
 
 ## Conventions
 
 ### Locators
 
-- Every locator uses `By.xpath()`. Nothing else — not `By.id`, not `By.className`,
-  not `By.cssSelector`, not `By.name`, not `By.tagName`. Chosen for uniformity, see
+- Every locator uses `By.xpath()` — nothing else. See
   `docs/decisions/0001-xpath-for-all-locators.md`.
-- Always scope locators to a container. demoQA reuses the same id in the form and in
-  the output block, so an unscoped locator silently resolves to the wrong element.
-- Positional indexes are allowed where no stable attribute identifies the element —
-  table columns, nearest ancestor. Prefer an attribute when one exists: a positional
-  locator does not break when the page changes, it silently starts matching
-  something else.
+- Always scope locators to a container. demoQA reuses the same id in the form and
+  in the output block, so an unscoped locator silently resolves to the wrong
+  element.
+- Positional indexes only where no stable attribute exists (table columns,
+  nearest ancestor). A positional locator does not break when the page changes —
+  it silently starts matching something else.
 
 ### Test identifiers
 
 - Every test carries `@Test(priority = N, testName = "XX-000: short description",
-  groups = {"smoke"|"regression"})`. Keep the description part under roughly 60
-  characters so it stays readable on one line. `priority` is the numeric part of
-  the test ID (e.g. `BS-010` → `priority = 10`) — it orders execution within a
-  functional area, not overall importance.
-- `groups`: `priority == 1` → `groups = {"smoke"}`; every other priority →
-  `groups = {"regression"}`. This applies per functional area, so each area has
-  its own `smoke` test (`TB-001`, `CB-001`, `WT-001`, `BS-001`, ...), not one
-  `smoke` test overall.
-- `XX` identifies the **functional area**, not the technology. An area keeps its
-  prefix whether it is exercised through the UI or the API.
-- Current prefixes:
-  - `TB` — Text Box
-  - `CB` — Check Box
-  - `WT` — Web Tables
-  - `BS` — Books Store
-- `000` is a three-digit number within that area.
+  groups = {"smoke"|"regression"})`, description under ~60 characters.
+- `priority` is the numeric part of the ID (`BS-010` → `10`).
+  `priority == 1` → `smoke`, everything else → `regression`, per functional area.
+- `XX` is the functional area, not the technology: `TB` Text Box, `CB` Check
+  Box, `WT` Web Tables, `BS` Books Store. `000` is a three-digit number.
 - Test IDs are never reused, even after a test is deleted.
 
 ### Test data
 
-- Test data is fixed and deterministic. No random values, no Faker. Where multiple
-  records are needed, vary them with a counter.
-- **UI only:** constants holding values read from the page under test are
-  named `EXPECTED_OUTPUT_<SCOPE>`. The name must make clear these are the
-  application's internal values, not the labels shown in the UI.
-- Usernames built from the thread name plus a timestamp are an accepted exception
-  to the "no random values" rule for API tests: the demoQA user registry is shared 
-  and global across all users of the site, so a fixed username would eventually collide. 
-  The value itself is never asserted on — only used to avoid collisions — so it does not
-  compromise determinism of the test's outcome.
+- Fixed and deterministic. No random values, no Faker; vary multiple records with
+  a counter.
+- **UI only:** constants holding values read from the page under test are named
+  `EXPECTED_OUTPUT_<SCOPE>` — the application's internal values, not UI labels.
+- Exception: API usernames are built from the thread name plus a timestamp. The
+  demoQA user registry is shared and global, so a fixed name would collide; the
+  thread name is what keeps parallel threads apart. The value is never asserted
+  on.
 
 ### Assertions
 
-- UI tests use `SoftAssert` for result checks, so one run reports every failed
-  expectation instead of stopping at the first.
-- Preconditions use a hard `Assert` regardless of layer. If the setup did not
-  happen, the test must stop — continuing against a state that does not exist
-  produces failures that point at the wrong thing.
-- API tests use hard `Assert` throughout.
-- Every assertion carries a failure message as the third argument. The message
-  states which behaviour is broken, not the values — `assertEquals` already prints
-  expected and actual.
-- Test case pages follow a Preconditions / Steps / Expected result structure.
-  Checks in the Preconditions block are assertions that must stop the test —
-  use a hard Assert for those.
+- UI tests use `SoftAssert` for result checks. API tests use hard `Assert`
+  throughout. Preconditions use hard `Assert` in every layer — if setup did not
+  happen, the test must stop.
+- Every assertion carries a failure message stating which behaviour is broken,
+  not the values.
 - API schema checks use draft-04 JSON Schema only — the RestAssured validator
-  silently ignores keywords from newer drafts. Order per response: status assert,
-  then schema, then deserialisation.
-
-### Logging
-
-- Log4j2 config is at `src/test/resources/log4j2.xml` — console-only appender with a
-  colorized pattern; a commented-out file appender is available if file logging is
-  ever needed. Loggers are obtained per class via SLF4J
-  (`LoggerFactory.getLogger(...)`).
+  silently ignores keywords from newer drafts. Order per response: status, then
+  schema, then deserialisation.
 
 ### Parallel safety
 
-- Suites run with parallel="methods": TestNG shares one test-class instance across
-  threads. Mutable instance fields in test classes must be thread-confined
-  (ThreadLocal, cleared in @AfterMethod(alwaysRun = true)). A thread-safe collection
-  is not enough — it prevents corruption, not cross-test interference.
+- Suites run with `parallel="methods"`: TestNG shares one test-class instance
+  across threads. Mutable instance fields in test classes must be thread-confined
+  (`ThreadLocal`, cleared in `@AfterMethod(alwaysRun = true)`). A thread-safe
+  collection is not enough — it prevents corruption, not cross-test interference.
 
 ### BDD (Cucumber)
 
-- Cucumber 7.x through `cucumber-testng`, with PicoContainer for dependency
-  injection. All Cucumber artifacts take their version from `cucumber-bom` — one
-  version to pin, never per-artifact versions.
+- Cucumber 7.x through `cucumber-testng` with PicoContainer. All Cucumber
+  artifacts take their version from `cucumber-bom`.
 - Scenarios duplicate existing test cases; they never replace TestNG tests or
-  change their behaviour. Expected values shared by both are extracted to
-  `testing.testdata` and used from both sides — no duplicated literals.
-  Every scenario implements an existing Confluence test case — never invent one.
-- Tags replace `priority` / `testName` / `groups`: each scenario carries its test
-  case ID (`@BS-001`), `@smoke` or `@regression` by the same rule as TestNG groups
-  (`XX-001` → `@smoke`, everything else → `@regression`), and `@api` or `@ui`.
-- Gherkin is written in the third person ("the user") and declaratively: describe
-  behaviour, not UI mechanics or HTTP calls. `When the user adds a book to their
-  collection`, not `When the user clicks "Add"`. One `When` per scenario, except 
-  end-to-end journey test cases (e.g. BS-001), which alternate 
-  `When` / `Then` — one pair per action. Actions never go into `Then` steps.
-- Step text is bound with Cucumber Expressions. Regular expressions only where
-  they substantially simplify the binding.
-- Step definitions call `*Steps` / `ApiSteps` only — no locators, no WebElement,
-  no RestAssured calls. Missing behaviour is added
-  to the steps layer, not to glue.
-- Assertions only in `Then` steps, following the same rules as TestNG tests:
-  API — hard `Assert`; UI — `SoftAssert`, where each `Then` step creates its own
-  `SoftAssert` and calls `assertAll()` at the end of that step; preconditions in
-  `Given` — hard `Assert`.
-- State between steps is shared only through the PicoContainer-injected scenario
-  context. No static fields in glue or hooks.
-- Step definition classes are organised by domain concept (`UserStepDefs`,
-  `CollectionStepDefs`), not by feature file. Before adding a step definition,
-  search existing glue for one that matches or can be parameterised —
-  near-duplicate phrasings are not allowed.
-- API cleanup runs in an `@After("@api")` hook over the users recorded in the
-  scenario context. A failed cleanup is logged and never fails the scenario.
-- BDD runs through its own suite XML in `src/test/resources/suite/`, not through
-  the root `testng.xml`.
-- A scenario may cover a subset of its test case's checks; do not extend a
-  scenario to match its spec unless asked.
-
-## CI/CD
-
-GitHub Actions workflows live under `.github/workflows/`:
-
-- `ci-workflow.yml` — runs on every `push` and `pull_request`. Always runs
-  `cicd_simple_commit.xml` (API) and `ui_smoke.xml` (UI, headless). PR events and
-  pushes to `master` (i.e. a merge) additionally run `cicd_syntetic_tests.xml`
-  (PR only — demo/sandbox suite) and `ui_regression.xml` (UI, headless, both PR
-  and merge).
-- `cd-simulate.yml` — manual (`workflow_dispatch`) simulated deploy pipeline:
-  three sequential jobs (`deploy-qa1` → `deploy-stage` → `deploy-prod`), each
-  scoped to a GitHub Environment (`qa1`, `stage`, `prod`) with its own protection
-  rules (required reviewer, wait timer). The deploy step itself is a placeholder
-  `echo` — there is no real deploy target, only the environment-gating mechanism
-  is real.
-- `nightly.yml` — `schedule` (cron) trigger, independent of any code event, plus
-  `workflow_dispatch` for manual runs. Runs the full regression scope on a fixed
-  schedule rather than tied to a push/PR/merge.
-
-Headless mode and browser selection for UI suites are controlled via JVM system
-properties, not `pom.xml`: `-Dheadless=true` (default `false`, visible browser)
-and `-Dbrowser=CHROME|EDGE|SAFARI` (default `CHROME`). Any suite run against
-`ubuntu-latest` (no display) must pass `-Dheadless=true`.
+  change their behaviour. Expected values shared by both live in
+  `testing.testdata`. A scenario may cover a subset of its test case's checks;
+  do not extend it to match its spec unless asked.
+- Tags replace `priority` / `testName` / `groups`: the test case ID (`@BS-001`),
+  `@smoke` or `@regression` by the same rule as TestNG groups, and `@api` or
+  `@ui`.
+- Gherkin: third person ("the user"), declarative — behaviour, not UI mechanics
+  or HTTP calls. One `When` per scenario, except end-to-end journeys (e.g. BS-001),
+  which alternate `When` / `Then`. Actions never go into `Then` steps.
+- Cucumber Expressions; regular expressions only where they substantially
+  simplify the binding.
+- Step definitions call `*Steps` / `ApiSteps` only — no locators, `WebElement`
+  or RestAssured calls. Missing behaviour goes into the steps layer.
+- Assertions only in `Then` steps, same rules as TestNG; for UI, each `Then`
+  creates its own `SoftAssert` and calls `assertAll()` at its end.
+- State between steps only through the PicoContainer-injected scenario context.
+  No static fields in glue or hooks.
+- Step definition classes are organised by domain concept, not by feature file.
+  Search existing glue before adding a step — no near-duplicate phrasings.
+- API cleanup runs in an `@After("@api")` hook; a failed cleanup is logged and
+  never fails the scenario.
+- BDD runs through its own suite XML, not the root `testng.xml`.
 
 ## Working agreements
 
 ### Git
 
-- Never write to git: no branches, no commits, no stashing, no push, no pull
-  requests. Branching and PRs are handled manually.
-- Reading is fine and encouraged: `git status`, `git diff`, `git log`.
-
-### Cleanup
-
-- Clean up after yourself within a task: scratch files, draft
-  implementations, or debug fragments created while iterating toward a
-  solution are removed before the task is considered done.
+- Never write to git: no branches, commits, stashes, pushes or pull requests.
+- Reading is fine: `git status`, `git diff`, `git log`.
 
 ### Decisions
 
 - Decide small, reversible choices yourself — naming, where a constant lives,
   a literal-to-constant refactor, which of two equivalent structures to use.
-  State each such choice in one line in your summary so it can be reviewed.
+  State each in one line in your summary.
 - Stop and ask only when: a spec and the code disagree; a dependency would be
   added or changed; a rule in this file would have to be broken; or the change
   is hard to undo.
 - After changing code outside the task's own scope, run the affected existing
   suite and report the result.
 
-### Sandbox package
+### Cleanup
 
-- `src/test/java/sandbox` is a dedicated space for experiments and concept
-  demonstrations, not for testing the application. Code here is not held
-  to this file's conventions. Corresponding suite XML files live under
-  `suite/`. Stays in the repo by design, not something to "clean up".
+- Remove scratch files, draft implementations and debug fragments before a task
+  is done.
 
-### Lessons-learned package
+### Sandbox and lessons-learned packages
 
-- `src/test/java/lessonslearned` holds exercises based on interview feedback —
-  practice, not tests of the application.
-- No rule in this file applies there unless a prompt explicitly asks for it.
-  Do not refactor, restyle, rename or "fix" code in it to match project
-  conventions, and leave it out of repo-wide changes, reviews and audits unless
-  asked.
-- One exception: if a change elsewhere breaks compilation in this package, make
-  the minimal fix that keeps it compiling and say so in the summary — it lives
-  in the test sources, so a compile error there breaks every `mvn test` run.
-- Its suite XML files, if any, live under `src/test/resources/suite/` and are not
-  wired into CI.
-- Stays in the repo by design; the Cleanup rule does not apply to it.
+- `src/test/java/sandbox` (experiments) and `src/test/java/lessonslearned`
+  (exercises based on interview feedback) are not held to this file's rules,
+  unless a prompt explicitly asks for them. Do not refactor, restyle or "fix"
+  code there, and leave both out of repo-wide changes, reviews and audits.
+- Exception: if a change elsewhere breaks compilation there, make the minimal fix
+  that keeps it compiling and say so — a compile error there breaks every
+  `mvn test` run.
+- Their suite XMLs live under `src/test/resources/suite/`; `lessonslearned`
+  suites are not wired into CI. Both packages stay in the repo by design; the
+  Cleanup rule does not apply to them.
 
 ### Generated output
 
-- Anything longer than a few lines goes to a file, not the chat — unless the prompt
-  explicitly asks for the answer in the chat.
+- Anything longer than a few lines goes to a file, not the chat, unless the
+  prompt asks for the chat.
 - One-off analysis, comparisons and audits go to `reports/` as
-  `report_<topic>_<YYYY-MM-DD-HH-MM>.md`. These are snapshots, not
-  documentation, but are kept rather than deleted — the timestamp in the
-  filename lets multiple reviews of the same topic coexist and be compared.
-- Documents meant to be kept live in `docs/`.
+  `report_<topic>_<YYYY-MM-DD-HH-MM>.md` and are kept. Documents meant to be kept
+  live in `docs/`.
 
-### This file
+### README and this file
 
-- Do not edit CLAUDE.md. If a rule is missing, wrong, or contradicts the code, say
-  so and propose the wording — the change is made manually.
+- Do not edit README.md unless explicitly asked — it is a stable overview.
+- Do not edit CLAUDE.md. If a rule is missing, wrong or contradicts the code, say
+  so and propose the wording.
 
 ## Dependencies
 
-- Never choose a dependency version from memory. Say which dependency is
-  needed and why, and let me pin the version.
-- Do not add a dependency without saying so explicitly in your summary.
+- Never choose a dependency version from memory. Say which dependency is needed
+  and why, and let me pin the version.
+- Never add a dependency without saying so explicitly in your summary.
