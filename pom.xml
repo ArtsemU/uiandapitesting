@@ -182,6 +182,15 @@
       <version>${allure.version}</version>
     </dependency>
 
+    <!-- Allure RestAssured filter (request/response attachments, wired in api.ApiSpec) -->
+    <!-- Source: https://mvnrepository.com/artifact/io.qameta.allure/allure-rest-assured -->
+    <dependency>
+      <groupId>io.qameta.allure</groupId>
+      <artifactId>allure-rest-assured</artifactId>
+      <version>${allure.version}</version>
+      <scope>test</scope>
+    </dependency>
+
     <!-- AspectJ weaver (javaagent for Allure @Step / @Attachment, see maven-surefire-plugin argLine) -->
     <!-- Source: https://mvnrepository.com/artifact/org.aspectj/aspectjweaver -->
     <dependency>
@@ -224,6 +233,18 @@
           <argLine>
             -javaagent:"${settings.localRepository}/org/aspectj/aspectjweaver/${aspectj.version}/aspectjweaver-${aspectj.version}.jar"
           </argLine>
+        </configuration>
+      </plugin>
+      <!-- Allure HTML report: no <executions>, so it is not bound to any lifecycle phase and a
+           failing test cannot stop it. Invoke explicitly after the tests: mvn allure:report
+           Output goes outside target/ so mvn clean keeps the last report. -->
+      <!-- Source: https://mvnrepository.com/artifact/io.qameta.allure/allure-maven -->
+      <plugin>
+        <groupId>io.qameta.allure</groupId>
+        <artifactId>allure-maven</artifactId>
+        <version>3.1.0</version>
+        <configuration>
+          <reportDirectory>${project.basedir}/allure-report</reportDirectory>
         </configuration>
       </plugin>
       <!-- Gatling: no <executions>, so it is not bound to any lifecycle phase and never runs

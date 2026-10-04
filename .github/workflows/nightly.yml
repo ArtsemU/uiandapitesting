@@ -31,3 +31,16 @@ jobs:
 
       - name: Run BDD parallel suite (headless)
         run: mvn -B test -DsuiteXmlFile=src/test/resources/suite/bdd_parallel.xml -Dheadless=true
+
+      # Report and upload run even when a test step failed; the job still fails on test failures.
+      - name: Generate Allure report
+        if: always()
+        run: mvn -B allure:report
+
+      - name: Upload Allure report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: allure-report-full_regression
+          path: allure-report
+          retention-days: 2

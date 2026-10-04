@@ -33,6 +33,19 @@ jobs:
         if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/master')
         run: mvn -B test -DsuiteXmlFile=src/test/resources/suite/ui_regression.xml -Dheadless=true
 
+      # Report and upload run even when a test step failed; the job still fails on test failures.
+      - name: Generate Allure report
+        if: always()
+        run: mvn -B allure:report
+
+      - name: Upload Allure report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: allure-report-simple_check
+          path: allure-report
+          retention-days: 2
+
   bdd:
     # Same events as the regression steps: pull requests and merges to master, not plain pushes.
     if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/master')
@@ -51,3 +64,16 @@ jobs:
 
       - name: Run BDD suite (headless)
         run: mvn -B test -DsuiteXmlFile=src/test/resources/suite/bdd.xml -Dheadless=true
+
+      # Report and upload run even when a test step failed; the job still fails on test failures.
+      - name: Generate Allure report
+        if: always()
+        run: mvn -B allure:report
+
+      - name: Upload Allure report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: allure-report-bdd
+          path: allure-report
+          retention-days: 2
