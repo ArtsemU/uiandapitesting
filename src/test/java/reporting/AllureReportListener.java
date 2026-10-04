@@ -12,8 +12,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 /**
  * Regenerates the Allure HTML report ({@code mvn allure:report}) when a suite
@@ -23,10 +26,17 @@ import java.util.concurrent.TimeUnit;
  *
  * Registered through META-INF/services/org.testng.ITestNGListener, the same
  * ServiceLoader mechanism that registers Allure's own listener, so it fires under
- * any TestNG launcher. Fires once per suite; on Maven and CI runs it duplicates the
+ * any TestNG launcher. Fires once per suite; on Maven runs it duplicates the
  * explicit allure:report step, which is harmless.
  *
- * A failure to generate the report is logged at ERROR and never fails the run.
+ * Does nothing when the CI environment variable is "true" (set by GitHub Actions):
+ * the workflow generates and uploads the report once per job itself.
+ *
+ * After a report is generated, only the newest report folders are kept (default 10,
+ * override with -Dallure.report.keep=<n>); older report-yyyyMMdd-HHmmss folders are
+ * deleted. Other content of allure-report/ is never touched.
+ *
+ * A failure to generate or prune reports is logged at ERROR and never fails the run.
  */
 public class AllureReportListener implements ISuiteListener {
     private static final Logger log = LoggerFactory.getLogger(AllureReportListener.class);
@@ -34,9 +44,17 @@ public class AllureReportListener implements ISuiteListener {
     private static final long TIMEOUT_MINUTES = 5;
     private static final int OUTPUT_TAIL_LINES = 30;
     private static final DateTimeFormatter TIMESTAMP = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss");
+    private static final Pattern REPORT_FOLDER = Pattern.compile("report-\\d{8}-\\d{6}");
+    private static final String KEEP_PROPERTY = "allure.report.keep";
+    private static final int DEFAULT_KEEP = 10;
 
     @Override
     public void onFinish(ISuite suite) {
+        if ("true".equals(System.getenv("CI"))) {
+            log.info("CI=true, Allure report left to the workflow");
+            return;
+        }
+
         File projectDir = new File(System.getProperty("user.dir"));
         if (!new File(projectDir, "pom.xml").isFile()) {
             log.error("Allure report not generated: no pom.xml in working directory {}", projectDir);
@@ -64,12 +82,66 @@ public class AllureReportListener implements ISuiteListener {
                         process.exitValue(), tail(output));
             } else {
                 log.info("Allure report: {}", reportDir.resolve("index.html"));
+                pruneOldReports(reportDir.getParent());
             }
         } catch (IOException e) {
             log.error("Allure report not generated: could not run mvn allure:report", e);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             log.error("Allure report not generated: interrupted while waiting for mvn allure:report", e);
+        }
+    }
+
+    // Folder names sort chronologically, so name order is age order
+    private static void pruneOldReports(Path reportsRoot) {
+        Integer keep = keepCount();
+        if (keep == null) {
+            return;
+        }
+        List<Path> reports;
+        try (Stream<Path> children = Files.list(reportsRoot)) {
+            reports = children
+                    .filter(Files::isDirectory)
+                    .filter(dir -> REPORT_FOLDER.matcher(dir.getFileName().toString()).matches())
+                    .sorted(Comparator.comparing((Path dir) -> dir.getFileName().toString()).reversed())
+                    .toList();
+        } catch (IOException e) {
+            log.error("Old Allure reports not pruned: could not list {}", reportsRoot, e);
+            return;
+        }
+        for (Path old : reports.subList(Math.min(keep, reports.size()), reports.size())) {
+            try {
+                deleteRecursively(old);
+                log.info("Deleted old Allure report {}", old);
+            } catch (IOException e) {
+                log.error("Old Allure report not deleted: {}", old, e);
+            }
+        }
+    }
+
+    // A bad value never deletes anything: null means skip pruning
+    private static Integer keepCount() {
+        String value = System.getProperty(KEEP_PROPERTY);
+        if (value == null || value.isBlank()) {
+            return DEFAULT_KEEP;
+        }
+        try {
+            int keep = Integer.parseInt(value.trim());
+            if (keep >= 1) {
+                return keep;
+            }
+        } catch (NumberFormatException ignored) {
+            // reported below
+        }
+        log.error("Old Allure reports not pruned: -D{}={} is not a positive integer", KEEP_PROPERTY, value);
+        return null;
+    }
+
+    private static void deleteRecursively(Path dir) throws IOException {
+        try (Stream<Path> paths = Files.walk(dir)) {
+            for (Path path : paths.sorted(Comparator.reverseOrder()).toList()) {
+                Files.delete(path);
+            }
         }
     }
 
