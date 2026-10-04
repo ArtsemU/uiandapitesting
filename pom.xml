@@ -17,6 +17,7 @@
     <maven.compiler.target>17</maven.compiler.target>
     <suiteXmlFile>testng.xml</suiteXmlFile>
     <rest-assured.version>6.0.0</rest-assured.version>
+    <aspectj.version>1.9.25.1</aspectj.version>
   </properties>
 
     <dependencyManagement>
@@ -161,6 +162,24 @@
       <version>2.26.0</version>
     </dependency>
 
+    <!-- Allure (TestNG listener, registered automatically via ServiceLoader; results in target/allure-results) -->
+    <!-- Source: https://mvnrepository.com/artifact/io.qameta.allure/allure-testng -->
+    <dependency>
+      <groupId>io.qameta.allure</groupId>
+      <artifactId>allure-testng</artifactId>
+      <version>3.0.0</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- AspectJ weaver (javaagent for Allure @Step / @Attachment, see maven-surefire-plugin argLine) -->
+    <!-- Source: https://mvnrepository.com/artifact/org.aspectj/aspectjweaver -->
+    <dependency>
+      <groupId>org.aspectj</groupId>
+      <artifactId>aspectjweaver</artifactId>
+      <version>${aspectj.version}</version>
+      <scope>test</scope>
+    </dependency>
+
     <!-- Cucumber (versions from cucumber-bom) -->
     <dependency>
       <groupId>io.cucumber</groupId>
@@ -190,6 +209,10 @@
           <suiteXmlFiles>
             <suiteXmlFile>${suiteXmlFile}</suiteXmlFile>
           </suiteXmlFiles>
+          <!-- AspectJ weaving for Allure @Step / @Attachment -->
+          <argLine>
+            -javaagent:"${settings.localRepository}/org/aspectj/aspectjweaver/${aspectj.version}/aspectjweaver-${aspectj.version}.jar"
+          </argLine>
         </configuration>
       </plugin>
       <!-- Gatling: no <executions>, so it is not bound to any lifecycle phase and never runs
