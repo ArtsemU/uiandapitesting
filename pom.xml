@@ -15,8 +15,14 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>17</maven.compiler.source>
     <maven.compiler.target>17</maven.compiler.target>
+    <!-- Keep method parameter names in bytecode: Allure @Step placeholders use them ({label}, {record.email}) -->
+    <maven.compiler.parameters>true</maven.compiler.parameters>
     <suiteXmlFile>testng.xml</suiteXmlFile>
     <rest-assured.version>6.0.0</rest-assured.version>
+    <aspectj.version>1.9.25.1</aspectj.version>
+    <allure.version>3.0.0</allure.version>
+    <!-- Allure HTML report folder; override per run, e.g. -Dallure.report.directory=allure-report/report-20261004-142500 -->
+    <allure.report.directory>${project.basedir}/allure-report</allure.report.directory>
   </properties>
 
     <dependencyManagement>
@@ -161,6 +167,41 @@
       <version>2.26.0</version>
     </dependency>
 
+    <!-- Allure (TestNG listener, registered automatically via ServiceLoader; results in target/allure-results) -->
+    <!-- Source: https://mvnrepository.com/artifact/io.qameta.allure/allure-testng -->
+    <dependency>
+      <groupId>io.qameta.allure</groupId>
+      <artifactId>allure-testng</artifactId>
+      <version>${allure.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- Allure annotations (@Step) for ui.steps, which lives in main sources; same version as allure-testng -->
+    <!-- Source: https://mvnrepository.com/artifact/io.qameta.allure/allure-java-commons -->
+    <dependency>
+      <groupId>io.qameta.allure</groupId>
+      <artifactId>allure-java-commons</artifactId>
+      <version>${allure.version}</version>
+    </dependency>
+
+    <!-- Allure RestAssured filter (request/response attachments, wired in api.ApiSpec) -->
+    <!-- Source: https://mvnrepository.com/artifact/io.qameta.allure/allure-rest-assured -->
+    <dependency>
+      <groupId>io.qameta.allure</groupId>
+      <artifactId>allure-rest-assured</artifactId>
+      <version>${allure.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- AspectJ weaver (javaagent for Allure @Step / @Attachment, see maven-surefire-plugin argLine) -->
+    <!-- Source: https://mvnrepository.com/artifact/org.aspectj/aspectjweaver -->
+    <dependency>
+      <groupId>org.aspectj</groupId>
+      <artifactId>aspectjweaver</artifactId>
+      <version>${aspectj.version}</version>
+      <scope>test</scope>
+    </dependency>
+
     <!-- Cucumber (versions from cucumber-bom) -->
     <dependency>
       <groupId>io.cucumber</groupId>
@@ -190,6 +231,25 @@
           <suiteXmlFiles>
             <suiteXmlFile>${suiteXmlFile}</suiteXmlFile>
           </suiteXmlFiles>
+          <!-- AspectJ weaving for Allure @Step / @Attachment -->
+          <argLine>
+            -javaagent:"${settings.localRepository}/org/aspectj/aspectjweaver/${aspectj.version}/aspectjweaver-${aspectj.version}.jar"
+          </argLine>
+        </configuration>
+      </plugin>
+      <!-- Allure HTML report: no <executions>, so it is not bound to any lifecycle phase and a
+           failing test cannot stop it. Invoke explicitly after the tests: mvn allure:report
+           Output goes outside target/ so mvn clean keeps the last report.
+           singleFile: for Allure 3 the plugin sets the Awesome report's options.singleFile, which
+           inlines styles, scripts, results and attachments into index.html. -->
+      <!-- Source: https://mvnrepository.com/artifact/io.qameta.allure/allure-maven -->
+      <plugin>
+        <groupId>io.qameta.allure</groupId>
+        <artifactId>allure-maven</artifactId>
+        <version>3.1.0</version>
+        <configuration>
+          <reportDirectory>${allure.report.directory}</reportDirectory>
+          <singleFile>true</singleFile>
         </configuration>
       </plugin>
       <!-- Gatling: no <executions>, so it is not bound to any lifecycle phase and never runs

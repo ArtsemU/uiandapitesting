@@ -31,6 +31,13 @@ public class BaseUITest {
     }
 
     //protected WebDriver driver() { return driverTL.get(); }
+
+    /**
+     * The current thread's browser, or null outside a UI test. For reporting listeners
+     * (screenshot on failure) only: tests drive the browser through the steps layer.
+     */
+    public static WebDriver currentDriver() { return driverTL.get(); }
+
     protected TextBoxSteps tbSteps() { return tbStepsTL.get(); }
     protected CheckBoxSteps cbSteps() { return cbStepsTL.get(); }
     protected WebTablesSteps wtSteps() { return wtStepsTL.get(); }
