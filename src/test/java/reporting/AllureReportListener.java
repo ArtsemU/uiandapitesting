@@ -10,12 +10,16 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
  * Regenerates the Allure HTML report ({@code mvn allure:report}) when a suite
  * finishes, pass or fail, so IDE runs that bypass Maven still get a fresh report.
+ * Each run gets its own folder, allure-report/report-yyyyMMdd-HHmmss, the same
+ * format run-tests-and-report.cmd uses.
  *
  * Registered through META-INF/services/org.testng.ITestNGListener, the same
  * ServiceLoader mechanism that registers Allure's own listener, so it fires under
@@ -29,6 +33,7 @@ public class AllureReportListener implements ISuiteListener {
 
     private static final long TIMEOUT_MINUTES = 5;
     private static final int OUTPUT_TAIL_LINES = 30;
+    private static final DateTimeFormatter TIMESTAMP = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss");
 
     @Override
     public void onFinish(ISuite suite) {
@@ -39,10 +44,12 @@ public class AllureReportListener implements ISuiteListener {
         }
 
         Path output = projectDir.toPath().resolve("target").resolve("allure-report-listener.log");
+        Path reportDir = projectDir.toPath().resolve("allure-report")
+                .resolve("report-" + LocalDateTime.now().format(TIMESTAMP));
         log.info("Suite '{}' finished, generating Allure report (output: {})", suite.getName(), output);
         try {
             Files.createDirectories(output.getParent());
-            Process process = new ProcessBuilder(command())
+            Process process = new ProcessBuilder(command(reportDir))
                     .directory(projectDir)
                     .redirectErrorStream(true)
                     .redirectOutput(output.toFile())
@@ -56,7 +63,7 @@ public class AllureReportListener implements ISuiteListener {
                 log.error("Allure report not generated: mvn allure:report exited with {}, last output:\n{}",
                         process.exitValue(), tail(output));
             } else {
-                log.info("Allure report: {}", projectDir.toPath().resolve("allure-report").resolve("index.html"));
+                log.info("Allure report: {}", reportDir.resolve("index.html"));
             }
         } catch (IOException e) {
             log.error("Allure report not generated: could not run mvn allure:report", e);
@@ -69,11 +76,12 @@ public class AllureReportListener implements ISuiteListener {
     // Windows: mvn is mvn.cmd, a batch file. cmd /c resolves it through PATH/PATHEXT like a
     // terminal does; starting a .cmd directly from ProcessBuilder depends on JDK batch-file
     // handling (jdk.lang.Process.allowAmbiguousCommands) and quotes arguments differently.
-    private static List<String> command() {
+    private static List<String> command(Path reportDir) {
+        String reportDirProperty = "-Dallure.report.directory=" + reportDir;
         if (System.getProperty("os.name").toLowerCase().startsWith("windows")) {
-            return List.of("cmd", "/c", "mvn", "-B", "allure:report");
+            return List.of("cmd", "/c", "mvn", "-B", "allure:report", reportDirProperty);
         }
-        return List.of("mvn", "-B", "allure:report");
+        return List.of("mvn", "-B", "allure:report", reportDirProperty);
     }
 
     private static String tail(Path output) {

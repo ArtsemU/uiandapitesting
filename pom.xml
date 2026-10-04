@@ -21,6 +21,8 @@
     <rest-assured.version>6.0.0</rest-assured.version>
     <aspectj.version>1.9.25.1</aspectj.version>
     <allure.version>3.0.0</allure.version>
+    <!-- Allure HTML report folder; override per run, e.g. -Dallure.report.directory=allure-report/report-20261004-142500 -->
+    <allure.report.directory>${project.basedir}/allure-report</allure.report.directory>
   </properties>
 
     <dependencyManagement>
@@ -244,7 +246,7 @@
         <artifactId>allure-maven</artifactId>
         <version>3.1.0</version>
         <configuration>
-          <reportDirectory>${project.basedir}/allure-report</reportDirectory>
+          <reportDirectory>${allure.report.directory}</reportDirectory>
         </configuration>
       </plugin>
       <!-- Gatling: no <executions>, so it is not bound to any lifecycle phase and never runs
