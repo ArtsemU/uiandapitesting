@@ -239,7 +239,9 @@
       </plugin>
       <!-- Allure HTML report: no <executions>, so it is not bound to any lifecycle phase and a
            failing test cannot stop it. Invoke explicitly after the tests: mvn allure:report
-           Output goes outside target/ so mvn clean keeps the last report. -->
+           Output goes outside target/ so mvn clean keeps the last report.
+           singleFile: for Allure 3 the plugin sets the Awesome report's options.singleFile, which
+           inlines styles, scripts, results and attachments into index.html. -->
       <!-- Source: https://mvnrepository.com/artifact/io.qameta.allure/allure-maven -->
       <plugin>
         <groupId>io.qameta.allure</groupId>
@@ -247,6 +249,7 @@
         <version>3.1.0</version>
         <configuration>
           <reportDirectory>${allure.report.directory}</reportDirectory>
+          <singleFile>true</singleFile>
         </configuration>
       </plugin>
       <!-- Gatling: no <executions>, so it is not bound to any lifecycle phase and never runs
