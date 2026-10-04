@@ -20,6 +20,16 @@ suites for Text Box, Check Box and Web Tables; API tests for the Bookstore API
   `-Dbrowser=CHROME|EDGE|SAFARI` (default CHROME), read directly by
   `WebDriverFactory`, not by `pom.xml`. Any UI suite on CI (no display) must pass
   `-Dheadless=true`.
+- `mvn allure:report` builds the local Allure HTML report from
+  `target/allure-results/`. It is a standalone goal, not bound to any Maven
+  lifecycle phase, specifically so a failing test does not stop the build before
+  the report step runs. `run-tests-and-report.cmd` runs a test command followed
+  by `mvn allure:report` on its own line (not `&&`), so the report regenerates
+  whether the run passed or failed, and also fires automatically from
+  `AllureReportListener` on any `mvn test`/IDE-native run. The report lands in
+  `allure-report/report-<timestamp>/` — a single-file `index.html` (Allure 3
+  `singleFile`), outside `target/` so `mvn clean` never wipes it. Override the
+  destination per run with `-Dallure.report.directory=<path>`.
 
 ## Architecture
 
@@ -36,6 +46,11 @@ Tests call Steps only, never Pages directly.
 - Test configuration methods (`@BeforeMethod` / `@AfterMethod`) carry
   `alwaysRun = true`: group-filtered suites skip them otherwise, and for cleanup
   that failure is silent.
+- `BaseUITest.currentDriver()` is a read-only static accessor used only by
+  reporting listeners (`ScreenshotOnFailureListener`) to reach the current
+  thread's driver from outside the test. It is not for test or Steps code —
+  tests still go through the Steps layer exclusively; this is a deliberate,
+  narrow exception for infrastructure that runs outside the normal call chain.
 
 ### Layer boundaries
 
@@ -68,11 +83,36 @@ Tests call Steps only, never Pages directly.
   context.
 - `performance` — load-test examples (JMeter DSL, Gatling). Gatling runs only
   through `mvn gatling:test`, never in the normal test lifecycle.
+- `reporting` — TestNG listeners for reporting (`AllureReportListener`,
+  `ScreenshotOnFailureListener`), registered through
+  `META-INF/services/org.testng.ITestNGListener`, not suite XMLs.
 
 `src/test/resources`:
 - `bdd/features/<area>/` — feature files. Not under `src/test/java`: Maven does
   not copy non-Java files from there onto the test classpath.
 - `schemas/` — JSON Schemas for API responses (`<resource>-schema.json`).
+
+## CI/CD
+
+GitHub Actions workflows under `.github/workflows/`:
+
+- `ci-workflow.yml` — runs on every push and pull request. Push and PR both run
+  a fast API + UI smoke check (job `simple_check`); PRs and merges into `master`
+  additionally run the broader regression suites and the BDD suite (job `bdd`).
+- `nightly.yml` — scheduled (cron) and manually dispatchable; runs the full
+  regression suite (job `full_regression`), independent of any push/PR/merge
+  event.
+- `cd-simulate.yml` — manual, simulated deploy pipeline through qa1 → stage →
+  prod GitHub Environments (real approval/wait-timer gating, placeholder deploy
+  step). No tests run here; untouched by the reporting work below.
+
+Every job in `ci-workflow.yml` and `nightly.yml` ends with two `if: always()`
+steps, after its last test step: generate the Allure report
+(`mvn allure:report`) and upload it via `actions/upload-artifact` (artifact
+names `allure-report-simple_check`, `allure-report-bdd`,
+`allure-report-full_regression`; `retention-days: 2`). This runs regardless of
+pass/fail and does not change surefire's own failure behaviour — the exit code
+that gates branch protection is untouched.
 
 ## Test specifications
 
@@ -163,6 +203,30 @@ Confluence is read-only. Never create, update or delete pages there.
   never fails the scenario.
 - BDD runs through its own suite XML, not the root `testng.xml`.
 
+### Reporting
+
+- UI `*Steps` methods carry Allure `@Step("...")` alongside their existing
+  SLF4J log line — both stay, they serve different readers (console vs Allure
+  report). This applies to every public method in the Steps layer, not just
+  today's three classes: any new UI Steps method gets `@Step` too. Use
+  parameter placeholders (`{param}`, or `{object.field}` for one meaningful
+  field of an object parameter) rather than leaving the annotation's value
+  empty or dumping a whole object's `toString()`.
+- API request/response logging goes through the `AllureRestAssured` filter,
+  wired once into the shared `RequestSpecBuilder` in `api.ApiSpec`. Individual
+  tests never add their own request/response logging. The `Authorization`
+  header is redacted in the attachment; request/response bodies are not
+  (`createUser`/`generateToken` bodies carry the password/token in plain text)
+  — accepted, since both already appear elsewhere (console log, `api.properties`).
+- `ScreenshotOnFailureListener` attaches a PNG to Allure on `onTestFailure`,
+  for classes extending `BaseUITest` only. API and BDD failures are skipped
+  (BDD: logged nothing, since Cucumber's own `@After` hook already closed the
+  driver before TestNG sees the failure; plain API classes: skipped silently).
+  A failure inside the screenshot capture itself is caught and logged, never
+  rethrown — it must never mask the real test failure. BDD UI scenarios
+  getting no screenshots is a known, accepted gap (see TODO.md); fixing it
+  means capturing in `UiHooks`' `@After`, not this listener.
+
 ## Working agreements
 
 ### Git
@@ -218,3 +282,7 @@ Confluence is read-only. Never create, update or delete pages there.
 - Never choose a dependency version from memory. Say which dependency is needed
   and why, and let me pin the version.
 - Never add a dependency without saying so explicitly in your summary.
+- Allure's four artifacts (`allure-testng`, `allure-java-commons`,
+  `allure-rest-assured`, all on `${allure.version}`) and the `allure-maven`
+  plugin are already pinned and settled — do not propose different versions
+  without being asked.
