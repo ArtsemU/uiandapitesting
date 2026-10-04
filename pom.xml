@@ -15,9 +15,12 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>17</maven.compiler.source>
     <maven.compiler.target>17</maven.compiler.target>
+    <!-- Keep method parameter names in bytecode: Allure @Step placeholders use them ({label}, {record.email}) -->
+    <maven.compiler.parameters>true</maven.compiler.parameters>
     <suiteXmlFile>testng.xml</suiteXmlFile>
     <rest-assured.version>6.0.0</rest-assured.version>
     <aspectj.version>1.9.25.1</aspectj.version>
+    <allure.version>3.0.0</allure.version>
   </properties>
 
     <dependencyManagement>
@@ -167,8 +170,16 @@
     <dependency>
       <groupId>io.qameta.allure</groupId>
       <artifactId>allure-testng</artifactId>
-      <version>3.0.0</version>
+      <version>${allure.version}</version>
       <scope>test</scope>
+    </dependency>
+
+    <!-- Allure annotations (@Step) for ui.steps, which lives in main sources; same version as allure-testng -->
+    <!-- Source: https://mvnrepository.com/artifact/io.qameta.allure/allure-java-commons -->
+    <dependency>
+      <groupId>io.qameta.allure</groupId>
+      <artifactId>allure-java-commons</artifactId>
+      <version>${allure.version}</version>
     </dependency>
 
     <!-- AspectJ weaver (javaagent for Allure @Step / @Attachment, see maven-surefire-plugin argLine) -->

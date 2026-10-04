@@ -1,5 +1,6 @@
 package ui.steps;
 
+import io.qameta.allure.Step;
 import org.openqa.selenium.WebDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,20 +19,24 @@ public class CheckBoxSteps extends BaseSteps {
         this.checkBoxPage = new CheckBoxPage(driver);
     }
 
+    @Step("Open Check Box page")
     public void openCheckBoxPage() {
         openUrl(CHECK_BOX_PAGE);
     }
 
+    @Step("Expand node {label}")
     public void expandNode(String label) {
         log.info("Expanding node: {}", label);
         checkBoxPage.expandNode(label);
     }
 
+    @Step("Select checkbox {label}")
     public void selectCheckbox(String label) {
         log.info("Selecting checkbox: {}", label);
         checkBoxPage.selectItem(label);
     }
 
+    @Step("Get selected items")
     public List<String> getSelectedItems() {
         List<String> items = checkBoxPage.getSelectedItems();
         log.info("Selected items: {}", items);
