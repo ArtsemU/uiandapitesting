@@ -5,9 +5,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
+import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
 import sandbox.Cow;
+import sandbox.ConsoleBannerListener;
 
 /**
  * Sandbox for practicing TestNG suite/thread configuration (not for
@@ -15,6 +17,7 @@ import sandbox.Cow;
  * state, nothing thread-related. Not part of the framework suites: run it
  * through sandbox-testng.xml.
  */
+@Listeners(ConsoleBannerListener.class)
 public class CowTest {
     private static final Logger log = LoggerFactory.getLogger(CowTest.class);
 
