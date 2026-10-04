@@ -6,8 +6,8 @@ public demo site [demoQA](https://demoqa.com): UI tests for several of its pages
 Maven and TestNG.
 
 The repository also holds experiments around that core — BDD with Cucumber,
-JSON Schema validation, stubs and mocks, load tests, parallel runs and CI/CD
-pipelines.
+JSON Schema validation, stubs and mocks, load tests, parallel runs, reporting
+and CI/CD pipelines.
 
 ## Running
 
