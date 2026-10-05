@@ -1,7 +1,7 @@
 package testing.ui;
 
-import org.testng.Assert;
 import org.testng.annotations.Test;
+import org.testng.asserts.SoftAssert;
 import testing.testdata.CheckBoxTestData;
 
 import java.util.List;
@@ -16,7 +16,10 @@ public class CheckBoxTest extends BaseUITest {
         cbSteps().selectCheckbox("Desktop");
 
         List<String> selectedItems = cbSteps().getSelectedItems();
-        Assert.assertEquals(selectedItems, CheckBoxTestData.EXPECTED_OUTPUT_DESKTOP, "Selected items mismatch");
+        SoftAssert softAssert = new SoftAssert();
+        softAssert.assertEquals(selectedItems, CheckBoxTestData.EXPECTED_OUTPUT_DESKTOP,
+                "Selecting Desktop does not select exactly Desktop and its children");
+        softAssert.assertAll();
     }
 
     @Test(priority = 2, testName = "CB-002: check Office+Downloads selects both subtrees", groups = {"regression"})
@@ -29,7 +32,10 @@ public class CheckBoxTest extends BaseUITest {
         cbSteps().selectCheckbox("Downloads");
 
         List<String> selectedItems = cbSteps().getSelectedItems();
-        Assert.assertEquals(selectedItems, CheckBoxTestData.EXPECTED_OUTPUT_OFFICE_DOWNLOADS, "Selected items mismatch");
+        SoftAssert softAssert = new SoftAssert();
+        softAssert.assertEquals(selectedItems, CheckBoxTestData.EXPECTED_OUTPUT_OFFICE_DOWNLOADS,
+                "Selecting Office and Downloads does not select exactly both subtrees");
+        softAssert.assertAll();
     }
 
     @Test(priority = 3, testName = "CB-003: check Notes only selects just Notes", groups = {"regression"})
@@ -40,6 +46,9 @@ public class CheckBoxTest extends BaseUITest {
         cbSteps().selectCheckbox("Notes");
 
         List<String> selectedItems = cbSteps().getSelectedItems();
-        Assert.assertEquals(selectedItems, CheckBoxTestData.EXPECTED_OUTPUT_NOTES, "Selected items mismatch");
+        SoftAssert softAssert = new SoftAssert();
+        softAssert.assertEquals(selectedItems, CheckBoxTestData.EXPECTED_OUTPUT_NOTES,
+                "Selecting Notes does not select only Notes");
+        softAssert.assertAll();
     }
 }

@@ -36,30 +36,16 @@ suites for Text Box, Check Box and Web Tables; API tests for the Bookstore API
 Three layers, driven strictly top-down: **Tests → Steps → Pages → BasePage**.
 Tests call Steps only, never Pages directly.
 
-- Pages hold `By` locators as private fields and expose actions and getters. No
-  assertions. Element interaction goes through the `BasePage` helpers, not
-  `WebElement` methods directly, so waits stay consistent.
-- Steps compose page objects into business-level actions and own SLF4J logging.
-  No assertions, no `By`, `WebElement` or driver access.
+- UI Pages, Steps and `BaseUITest.currentDriver()`: see `.claude/rules/ui.md` (loads when working on files under `src/main/java/ui/`, `src/main/java/factory/` or `src/test/java/testing/`).
 - Tests call Steps only and hold all assertions. No helper methods: anything
   reusable belongs in the steps layer.
-- Test configuration methods (`@BeforeMethod` / `@AfterMethod`) carry
-  `alwaysRun = true`: group-filtered suites skip them otherwise, and for cleanup
-  that failure is silent.
-- `BaseUITest.currentDriver()` is a read-only static accessor used only by
-  reporting listeners (`ScreenshotOnFailureListener`) to reach the current
-  thread's driver from outside the test. It is not for test or Steps code —
-  tests still go through the Steps layer exclusively; this is a deliberate,
-  narrow exception for infrastructure that runs outside the normal call chain.
+- Test configuration methods: see `.claude/rules/testing.md` (loads when working on files under `src/test/java/`).
 
 ### Layer boundaries
 
 - Objects built through a builder are passed whole. Never unpack them into
   positional parameters at a layer boundary.
-- Type conversion between the domain type and the string form the DOM uses lives
-  in the page layer only.
-- **UI only:** page objects return domain objects, not individual cell values,
-  when the caller needs more than one field.
+- UI-only layer boundaries: see `.claude/rules/ui.md` (loads when working on files under `src/main/java/ui/`, `src/main/java/factory/` or `src/test/java/testing/`).
 - **API only:** clients return the raw Response. They do not deserialise and do
   not check status codes. Tests and glue assert on the status, then deserialise
   with `response.as(Model.class)`.
@@ -125,55 +111,9 @@ Confluence is read-only. Never create, update or delete pages there.
 
 ## Conventions
 
-### Locators
+Locators: see `.claude/rules/ui.md` (loads when working on files under `src/main/java/ui/`, `src/main/java/factory/` or `src/test/java/testing/`).
 
-- Every locator uses `By.xpath()` — nothing else. See
-  `docs/decisions/0001-xpath-for-all-locators.md`.
-- Always scope locators to a container. demoQA reuses the same id in the form and
-  in the output block, so an unscoped locator silently resolves to the wrong
-  element.
-- Positional indexes only where no stable attribute exists (table columns,
-  nearest ancestor). A positional locator does not break when the page changes —
-  it silently starts matching something else.
-
-### Test identifiers
-
-- Every test carries `@Test(priority = N, testName = "XX-000: short description",
-  groups = {"smoke"|"regression"})`, description under ~60 characters.
-- `priority` is the numeric part of the ID (`BS-010` → `10`).
-  `priority == 1` → `smoke`, everything else → `regression`, per functional area.
-- `XX` is the functional area, not the technology: `TB` Text Box, `CB` Check
-  Box, `WT` Web Tables, `BS` Books Store. `000` is a three-digit number.
-- Test IDs are never reused, even after a test is deleted.
-
-### Test data
-
-- Fixed and deterministic. No random values, no Faker; vary multiple records with
-  a counter.
-- **UI only:** constants holding values read from the page under test are named
-  `EXPECTED_OUTPUT_<SCOPE>` — the application's internal values, not UI labels.
-- Exception: API usernames are built from the thread name plus a timestamp. The
-  demoQA user registry is shared and global, so a fixed name would collide; the
-  thread name is what keeps parallel threads apart. The value is never asserted
-  on.
-
-### Assertions
-
-- UI tests use `SoftAssert` for result checks. API tests use hard `Assert`
-  throughout. Preconditions use hard `Assert` in every layer — if setup did not
-  happen, the test must stop.
-- Every assertion carries a failure message stating which behaviour is broken,
-  not the values.
-- API schema checks use draft-04 JSON Schema only — the RestAssured validator
-  silently ignores keywords from newer drafts. Order per response: status, then
-  schema, then deserialisation.
-
-### Parallel safety
-
-- Suites run with `parallel="methods"`: TestNG shares one test-class instance
-  across threads. Mutable instance fields in test classes must be thread-confined
-  (`ThreadLocal`, cleared in `@AfterMethod(alwaysRun = true)`). A thread-safe
-  collection is not enough — it prevents corruption, not cross-test interference.
+Test identifiers, test data, assertions and parallel safety: see `.claude/rules/testing.md` (loads when working on files under `src/test/java/`).
 
 ### BDD (Cucumber)
 
@@ -205,13 +145,7 @@ Confluence is read-only. Never create, update or delete pages there.
 
 ### Reporting
 
-- UI `*Steps` methods carry Allure `@Step("...")` alongside their existing
-  SLF4J log line — both stay, they serve different readers (console vs Allure
-  report). This applies to every public method in the Steps layer, not just
-  today's three classes: any new UI Steps method gets `@Step` too. Use
-  parameter placeholders (`{param}`, or `{object.field}` for one meaningful
-  field of an object parameter) rather than leaving the annotation's value
-  empty or dumping a whole object's `toString()`.
+- UI Steps `@Step` annotations: see `.claude/rules/ui.md` (loads when working on files under `src/main/java/ui/`, `src/main/java/factory/` or `src/test/java/testing/`).
 - API request/response logging goes through the `AllureRestAssured` filter,
   wired once into the shared `RequestSpecBuilder` in `api.ApiSpec`. Individual
   tests never add their own request/response logging. The `Authorization`
@@ -240,8 +174,9 @@ Confluence is read-only. Never create, update or delete pages there.
   a literal-to-constant refactor, which of two equivalent structures to use.
   State each in one line in your summary.
 - Stop and ask only when: a spec and the code disagree; a dependency would be
-  added or changed; a rule in this file would have to be broken; or the change
-  is hard to undo.
+  added or changed; a rule in this file would have to be broken; the change is
+  hard to undo; or the prompt does not match the current state of the repo
+  (the work is already done, or what it refers to is missing).
 - After changing code outside the task's own scope, run the affected existing
   suite and report the result.
 

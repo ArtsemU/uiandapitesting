@@ -1,44 +1,38 @@
 package testing.ui;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.testng.Assert;
 import org.testng.annotations.Test;
 import org.testng.asserts.SoftAssert;
-import ui.steps.TextBoxSteps;
+import testing.testdata.TextBoxTestData;
 
 public class TextBoxTest extends BaseUITest{
-    private static final Logger log = LoggerFactory.getLogger(TextBoxTest.class);
 
     @Test(priority = 1, testName = "TB-001: setting only full name displays it in output", groups = {"smoke"})
     public void setNameOnlyTest() {
         tbSteps().openTBPage();
-        tbSteps().fillFullName("John Doue");
+        tbSteps().fillFullName(TextBoxTestData.FULL_NAME);
         tbSteps().submitForm();
         String result = tbSteps().getOutputName();
-        Assert.assertEquals(result, "John Doue", "Full name mismatch");
+        SoftAssert softAssert = new SoftAssert();
+        softAssert.assertEquals(result, TextBoxTestData.FULL_NAME,
+                "Submitting only the full name does not display it in the output block");
+        softAssert.assertAll();
     }
 
     @Test(priority = 2, testName = "TB-002: submitted data is displayed in the output block", groups = {"regression"})
     public void submittedDataIsDisplayedInOutput() {
-        String fullName = "John Doue";
-        String email = "johndoue@myemail.net";
-        String currAddress = "Poland, Wroclaw, 50-422, Szybka 1A - 20";
-        String perAddress = "Belarus, Minsk, 255125, Gor 7 - 55";
-
         tbSteps().openTBPage();
-        tbSteps().fillFullName(fullName);
-        tbSteps().fillEmail(email);
-        tbSteps().fillCurrAddress(currAddress);
-        tbSteps().fillPerAddress(perAddress);
+        tbSteps().fillFullName(TextBoxTestData.FULL_NAME);
+        tbSteps().fillEmail(TextBoxTestData.EMAIL);
+        tbSteps().fillCurrAddress(TextBoxTestData.CURRENT_ADDRESS);
+        tbSteps().fillPerAddress(TextBoxTestData.PERMANENT_ADDRESS);
 
         tbSteps().submitForm();
 
         SoftAssert softAssert = new SoftAssert();
-        softAssert.assertEquals(tbSteps().getOutputName(), fullName, "Full name mismatched");
-        softAssert.assertEquals(tbSteps().getOutputEmail(), email, "Email mismatched");
-        softAssert.assertEquals(tbSteps().getOutputCurrAddress(), currAddress, "Address mismatched");
-        softAssert.assertEquals(tbSteps().getOutputPerAddress(), perAddress, "Address mismatched");
+        softAssert.assertEquals(tbSteps().getOutputName(), TextBoxTestData.FULL_NAME, "Submitted full name is not displayed in the output block");
+        softAssert.assertEquals(tbSteps().getOutputEmail(), TextBoxTestData.EMAIL, "Submitted email is not displayed in the output block");
+        softAssert.assertEquals(tbSteps().getOutputCurrAddress(), TextBoxTestData.CURRENT_ADDRESS, "Submitted current address is not displayed in the output block");
+        softAssert.assertEquals(tbSteps().getOutputPerAddress(), TextBoxTestData.PERMANENT_ADDRESS, "Submitted permanent address is not displayed in the output block");
         softAssert.assertAll();
     }
 

@@ -210,6 +210,8 @@ public class WebTablesPage extends BasePage {
     public int getRowsPerPage() {
         WebElement table = driver.findElement(tableContainer);
         WebElement pagination = table.findElement(paginationContainer);
+        // read-only state of a native <select>: Select is the WebDriver API for it
+        // and BasePage has no helper that returns the selected option
         Select select = new Select(pagination.findElement(rowsPerPageSelect));
         return Integer.parseInt(select.getFirstSelectedOption().getAttribute("value"));
     }
