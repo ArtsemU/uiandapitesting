@@ -211,6 +211,9 @@ Test identifiers, test data, assertions and parallel safety: see `.claude/rules/
 - Do not edit README.md unless explicitly asked — it is a stable overview.
 - Do not edit CLAUDE.md. If a rule is missing, wrong or contradicts the code, say
   so and propose the wording.
+- Agent instructions live only in the root CLAUDE.md and .claude/rules/.
+  Do not create nested CLAUDE.md files; area-specific rules go into a
+  path-scoped file under .claude/rules/.
 
 ## Dependencies
 
