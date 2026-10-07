@@ -18,18 +18,9 @@ suites for Text Box, Check Box and Web Tables; API tests for the Bookstore API
   accept only `true` or `false`.
 - UI runs take `-Dheadless=true|false` (default false) and
   `-Dbrowser=CHROME|EDGE|SAFARI` (default CHROME), read directly by
-  `WebDriverFactory`, not by `pom.xml`. Any UI suite on CI (no display) must pass
-  `-Dheadless=true`.
-- `mvn allure:report` builds the local Allure HTML report from
-  `target/allure-results/`. It is a standalone goal, not bound to any Maven
-  lifecycle phase, specifically so a failing test does not stop the build before
-  the report step runs. `run-tests-and-report.cmd` runs a test command followed
-  by `mvn allure:report` on its own line (not `&&`), so the report regenerates
-  whether the run passed or failed, and also fires automatically from
-  `AllureReportListener` on any `mvn test`/IDE-native run. The report lands in
-  `allure-report/report-<timestamp>/` — a single-file `index.html` (Allure 3
-  `singleFile`), outside `target/` so `mvn clean` never wipes it. Override the
-  destination per run with `-Dallure.report.directory=<path>`.
+  `WebDriverFactory`, not by `pom.xml`.
+- UI runs on CI: see `.claude/rules/ci.md` (loads automatically for workflow files).
+- Allure report: see `.claude/rules/reporting.md` (loads automatically for reporting code).
 
 ## Architecture
 
@@ -78,25 +69,7 @@ Tests call Steps only, never Pages directly.
 
 ## CI/CD
 
-GitHub Actions workflows under `.github/workflows/`:
-
-- `ci-workflow.yml` — runs on every push and pull request. Push and PR both run
-  a fast API + UI smoke check (job `simple_check`); PRs and merges into `master`
-  additionally run the broader regression suites and the BDD suite (job `bdd`).
-- `nightly.yml` — scheduled (cron) and manually dispatchable; runs the full
-  regression suite (job `full_regression`), independent of any push/PR/merge
-  event.
-- `cd-simulate.yml` — manual, simulated deploy pipeline through qa1 → stage →
-  prod GitHub Environments (real approval/wait-timer gating, placeholder deploy
-  step). No tests run here; untouched by the reporting work below.
-
-Every job in `ci-workflow.yml` and `nightly.yml` ends with two `if: always()`
-steps, after its last test step: generate the Allure report
-(`mvn allure:report`) and upload it via `actions/upload-artifact` (artifact
-names `allure-report-simple_check`, `allure-report-bdd`,
-`allure-report-full_regression`; `retention-days: 2`). This runs regardless of
-pass/fail and does not change surefire's own failure behaviour — the exit code
-that gates branch protection is untouched.
+CI/CD workflows: see `.claude/rules/ci.md` (loads automatically for workflow files).
 
 ## Test specifications
 
@@ -115,44 +88,14 @@ Test identifiers, test data, assertions and parallel safety: see `.claude/rules/
 
 ### BDD (Cucumber)
 
-- Cucumber 7.x through `cucumber-testng` with PicoContainer. All Cucumber
-  artifacts take their version from `cucumber-bom`.
-- Scenarios duplicate existing test cases; they never replace TestNG tests or
-  change their behaviour. Expected values shared by both live in
-  `testing.testdata`. A scenario may cover a subset of its test case's checks;
-  do not extend it to match its spec unless asked.
-- Tags replace `priority` / `testName` / `groups`: the test case ID (`@BS-001`),
-  `@smoke` or `@regression` by the same rule as TestNG groups, and `@api` or
-  `@ui`.
-- Gherkin: third person ("the user"), declarative — behaviour, not UI mechanics
-  or HTTP calls. One `When` per scenario, except end-to-end journeys (e.g. BS-001),
-  which alternate `When` / `Then`. Actions never go into `Then` steps.
-- Cucumber Expressions; regular expressions only where they substantially
-  simplify the binding.
-- Step definitions call `*Steps` / `ApiSteps` only — no locators, `WebElement`
-  or RestAssured calls. Missing behaviour goes into the steps layer.
-- Assertions only in `Then` steps, same rules as TestNG; for UI, each `Then`
-  creates its own `SoftAssert` and calls `assertAll()` at its end.
-- State between steps only through the PicoContainer-injected scenario context.
-  No static fields in glue or hooks.
-- Step definition classes are organised by domain concept, not by feature file.
-  Search existing glue before adding a step — no near-duplicate phrasings.
-- API cleanup runs in an `@After("@api")` hook; a failed cleanup is logged and
-  never fails the scenario.
+- BDD conventions: see `.claude/rules/bdd.md` (loads automatically for BDD code).
 - BDD runs through its own suite XML, not the root `testng.xml`.
 
 ### Reporting
 
 - UI Steps `@Step` annotations: see `.claude/rules/ui.md` (loads automatically for UI code).
 - API request/response logging: see `.claude/rules/api.md` (loads automatically for API code).
-- `ScreenshotOnFailureListener` attaches a PNG to Allure on `onTestFailure`,
-  for classes extending `BaseUITest` only. API and BDD failures are skipped
-  (BDD: logged nothing, since Cucumber's own `@After` hook already closed the
-  driver before TestNG sees the failure; plain API classes: skipped silently).
-  A failure inside the screenshot capture itself is caught and logged, never
-  rethrown — it must never mask the real test failure. BDD UI scenarios
-  getting no screenshots is a known, accepted gap (see TODO.md); fixing it
-  means capturing in `UiHooks`' `@After`, not this listener.
+- Screenshot on failure: see `.claude/rules/reporting.md` (loads automatically for reporting code).
 
 ## Working agreements
 
@@ -210,7 +153,7 @@ Test identifiers, test data, assertions and parallel safety: see `.claude/rules/
   paths: frontmatter, then a "# Description" section: two or three simple
   sentences on what the rules are for and when the agent gets them.
   Pointers to a rules file (lines elsewhere that send the reader to it)
-  name the file, never the folders or globs it covers.
+  name the file, never the folders or globs it covers.hi again! 
 
 ## Dependencies
 
