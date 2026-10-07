@@ -8,6 +8,17 @@ Java/Selenium UI and RestAssured API test automation against demoQA: Page Object
 suites for Text Box, Check Box and Web Tables; API tests for the Bookstore API
 (`BookApiTests`). Java 17, Maven, TestNG, Selenium 4, SLF4J + Log4j2.
 
+## Rules files
+
+Rules for parts of the project live in .claude/rules/. The agent gets
+each file automatically when it opens a file from that part.
+- testing.md — rules for every test
+- ui.md — UI code and UI tests
+- api.md — API code and API tests
+- bdd.md — BDD feature files and glue code
+- ci.md — GitHub Actions workflows
+- reporting.md — test reports
+
 ## Build and test commands
 
 - `mvn test` runs the suite in the root `testng.xml`.
@@ -19,25 +30,19 @@ suites for Text Box, Check Box and Web Tables; API tests for the Bookstore API
 - UI runs take `-Dheadless=true|false` (default false) and
   `-Dbrowser=CHROME|EDGE|SAFARI` (default CHROME), read directly by
   `WebDriverFactory`, not by `pom.xml`.
-- UI runs on CI: see `.claude/rules/ci.md` (loads automatically for workflow files).
-- Allure report: see `.claude/rules/reporting.md` (loads automatically for reporting code).
 
 ## Architecture
 
 Three layers, driven strictly top-down: **Tests → Steps → Pages → BasePage**.
 Tests call Steps only, never Pages directly.
 
-- UI Pages, Steps and `BaseUITest.currentDriver()`: see `.claude/rules/ui.md` (loads automatically for UI code).
 - Tests call Steps only and hold all assertions. No helper methods: anything
   reusable belongs in the steps layer.
-- Test configuration methods: see `.claude/rules/testing.md` (loads automatically for tests).
 
 ### Layer boundaries
 
 - Objects built through a builder are passed whole. Never unpack them into
   positional parameters at a layer boundary.
-- UI-only layer boundaries: see `.claude/rules/ui.md` (loads automatically for UI code).
-- API-only layer boundaries: see `.claude/rules/api.md` (loads automatically for API code).
 
 ### Where things go
 
@@ -67,10 +72,6 @@ Tests call Steps only, never Pages directly.
   not copy non-Java files from there onto the test classpath.
 - `schemas/` — JSON Schemas for API responses (`<resource>-schema.json`).
 
-## CI/CD
-
-CI/CD workflows: see `.claude/rules/ci.md` (loads automatically for workflow files).
-
 ## Test specifications
 
 Test cases live in Confluence, space `Uiandapite`, under **Test Project**:
@@ -82,20 +83,9 @@ Confluence is read-only. Never create, update or delete pages there.
 
 ## Conventions
 
-Locators: see `.claude/rules/ui.md` (loads automatically for UI code).
-
-Test identifiers, test data, assertions and parallel safety: see `.claude/rules/testing.md` (loads automatically for tests).
-
 ### BDD (Cucumber)
 
-- BDD conventions: see `.claude/rules/bdd.md` (loads automatically for BDD code).
 - BDD runs through its own suite XML, not the root `testng.xml`.
-
-### Reporting
-
-- UI Steps `@Step` annotations: see `.claude/rules/ui.md` (loads automatically for UI code).
-- API request/response logging: see `.claude/rules/api.md` (loads automatically for API code).
-- Screenshot on failure: see `.claude/rules/reporting.md` (loads automatically for reporting code).
 
 ## Working agreements
 
@@ -158,7 +148,7 @@ Test identifiers, test data, assertions and parallel safety: see `.claude/rules/
   paths: frontmatter, then a "# Description" section: two or three simple
   sentences on what the rules are for and when the agent gets them.
   Pointers to a rules file (lines elsewhere that send the reader to it)
-  name the file, never the folders or globs it covers.hi again! 
+  name the file, never the folders or globs it covers.
 
 ## Dependencies
 
