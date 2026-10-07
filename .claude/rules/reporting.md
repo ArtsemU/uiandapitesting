@@ -19,10 +19,20 @@ automatically when it opens reporting code, the report script or pom.xml.
   the report step runs. `run-tests-and-report.cmd` runs a test command followed
   by `mvn allure:report` on its own line (not `&&`), so the report regenerates
   whether the run passed or failed, and also fires automatically from
-  `AllureReportListener` on any `mvn test`/IDE-native run. The report lands in
-  `allure-report/report-<timestamp>/` — a single-file `index.html` (Allure 3
-  `singleFile`), outside `target/` so `mvn clean` never wipes it. Override the
-  destination per run with `-Dallure.report.directory=<path>`.
+  `AllureReportListener` on any `mvn test`/IDE-native run, except when the
+  `CI` environment variable is `true` (GitHub Actions): then the listener does
+  nothing and the workflow builds the report. A plain `mvn allure:report`
+  writes straight into `allure-report/` (the `allure.report.directory` default
+  in `pom.xml`); `run-tests-and-report.cmd` and `AllureReportListener` pass
+  `allure-report/report-<timestamp>/` instead. After a successful report,
+  `AllureReportListener` keeps only the newest `report-<timestamp>` folders
+  (10 by default, set with `-Dallure.report.keep=<n>`; a value that is not a
+  positive integer skips the cleanup) and deletes the older ones; nothing else
+  in `allure-report/` is ever touched, and a failed cleanup is logged, never
+  failing the run. The report is a single-file
+  `index.html` (Allure 3 `singleFile`), outside `target/` so `mvn clean` never
+  wipes it. Override the destination per run with
+  `-Dallure.report.directory=<path>`.
 
 # Screenshot on failure
 
@@ -32,5 +42,5 @@ automatically when it opens reporting code, the report script or pom.xml.
   driver before TestNG sees the failure; plain API classes: skipped silently).
   A failure inside the screenshot capture itself is caught and logged, never
   rethrown — it must never mask the real test failure. BDD UI scenarios
-  getting no screenshots is a known, accepted gap (see TODO.md); fixing it
+  getting no screenshots is a known, accepted gap; fixing it
   means capturing in `UiHooks`' `@After`, not this listener.
