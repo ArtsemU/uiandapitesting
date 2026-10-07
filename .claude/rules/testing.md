@@ -4,6 +4,12 @@ paths:
   - "src/test/resources/bdd/**"
 ---
 
+# Description
+
+Rules for every test in this project. Follow them whenever
+you add or change a test. Rules only for UI or only for API are in ui.md
+and api.md. The agent gets this file automatically when it opens a test.
+
 # Test conventions
 
 ## Test configuration methods
@@ -29,11 +35,8 @@ paths:
 
 - Fixed and deterministic. No random values, no Faker; vary multiple records with
   a counter.
-- UI-only test data naming: see `.claude/rules/ui.md` (loads when working on files under `src/main/java/ui/`, `src/main/java/factory/` or `src/test/java/testing/`).
-- Exception: API usernames are built from the thread name plus a timestamp. The
-  demoQA user registry is shared and global, so a fixed name would collide; the
-  thread name is what keeps parallel threads apart. The value is never asserted
-  on.
+- UI-only test data naming: see `.claude/rules/ui.md` (loads automatically for UI code).
+- API username exception: see `.claude/rules/api.md` (loads automatically for API code).
 
 ## Assertions
 
@@ -42,9 +45,7 @@ paths:
   happen, the test must stop.
 - Every assertion carries a failure message stating which behaviour is broken,
   not the values.
-- API schema checks use draft-04 JSON Schema only — the RestAssured validator
-  silently ignores keywords from newer drafts. Order per response: status, then
-  schema, then deserialisation.
+- API schema checks: see `.claude/rules/api.md` (loads automatically for API code).
 
 ## Parallel safety
 

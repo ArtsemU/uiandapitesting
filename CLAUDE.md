@@ -36,19 +36,17 @@ suites for Text Box, Check Box and Web Tables; API tests for the Bookstore API
 Three layers, driven strictly top-down: **Tests → Steps → Pages → BasePage**.
 Tests call Steps only, never Pages directly.
 
-- UI Pages, Steps and `BaseUITest.currentDriver()`: see `.claude/rules/ui.md` (loads when working on files under `src/main/java/ui/`, `src/main/java/factory/` or `src/test/java/testing/`).
+- UI Pages, Steps and `BaseUITest.currentDriver()`: see `.claude/rules/ui.md` (loads automatically for UI code).
 - Tests call Steps only and hold all assertions. No helper methods: anything
   reusable belongs in the steps layer.
-- Test configuration methods: see `.claude/rules/testing.md` (loads when working on files under `src/test/java/`).
+- Test configuration methods: see `.claude/rules/testing.md` (loads automatically for tests).
 
 ### Layer boundaries
 
 - Objects built through a builder are passed whole. Never unpack them into
   positional parameters at a layer boundary.
-- UI-only layer boundaries: see `.claude/rules/ui.md` (loads when working on files under `src/main/java/ui/`, `src/main/java/factory/` or `src/test/java/testing/`).
-- **API only:** clients return the raw Response. They do not deserialise and do
-  not check status codes. Tests and glue assert on the status, then deserialise
-  with `response.as(Model.class)`.
+- UI-only layer boundaries: see `.claude/rules/ui.md` (loads automatically for UI code).
+- API-only layer boundaries: see `.claude/rules/api.md` (loads automatically for API code).
 
 ### Where things go
 
@@ -111,9 +109,9 @@ Confluence is read-only. Never create, update or delete pages there.
 
 ## Conventions
 
-Locators: see `.claude/rules/ui.md` (loads when working on files under `src/main/java/ui/`, `src/main/java/factory/` or `src/test/java/testing/`).
+Locators: see `.claude/rules/ui.md` (loads automatically for UI code).
 
-Test identifiers, test data, assertions and parallel safety: see `.claude/rules/testing.md` (loads when working on files under `src/test/java/`).
+Test identifiers, test data, assertions and parallel safety: see `.claude/rules/testing.md` (loads automatically for tests).
 
 ### BDD (Cucumber)
 
@@ -145,13 +143,8 @@ Test identifiers, test data, assertions and parallel safety: see `.claude/rules/
 
 ### Reporting
 
-- UI Steps `@Step` annotations: see `.claude/rules/ui.md` (loads when working on files under `src/main/java/ui/`, `src/main/java/factory/` or `src/test/java/testing/`).
-- API request/response logging goes through the `AllureRestAssured` filter,
-  wired once into the shared `RequestSpecBuilder` in `api.ApiSpec`. Individual
-  tests never add their own request/response logging. The `Authorization`
-  header is redacted in the attachment; request/response bodies are not
-  (`createUser`/`generateToken` bodies carry the password/token in plain text)
-  — accepted, since both already appear elsewhere (console log, `api.properties`).
+- UI Steps `@Step` annotations: see `.claude/rules/ui.md` (loads automatically for UI code).
+- API request/response logging: see `.claude/rules/api.md` (loads automatically for API code).
 - `ScreenshotOnFailureListener` attaches a PNG to Allure on `onTestFailure`,
   for classes extending `BaseUITest` only. API and BDD failures are skipped
   (BDD: logged nothing, since Cucumber's own `@After` hook already closed the
@@ -213,7 +206,11 @@ Test identifiers, test data, assertions and parallel safety: see `.claude/rules/
   so and propose the wording.
 - Agent instructions live only in the root CLAUDE.md and .claude/rules/.
   Do not create nested CLAUDE.md files; area-specific rules go into a
-  path-scoped file under .claude/rules/.
+  path-scoped file under .claude/rules/. Each rules file starts with its
+  paths: frontmatter, then a "# Description" section: two or three simple
+  sentences on what the rules are for and when the agent gets them.
+  Pointers to a rules file (lines elsewhere that send the reader to it)
+  name the file, never the folders or globs it covers.
 
 ## Dependencies
 

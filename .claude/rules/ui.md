@@ -5,6 +5,12 @@ paths:
   - "src/test/java/testing/**"
 ---
 
+# Description
+
+Rules for the UI part of the project: the code that works with
+web pages, and the UI tests. The agent gets this file automatically when
+it opens a UI file.
+
 # UI conventions
 
 ## Architecture
