@@ -141,6 +141,11 @@ Test identifiers, test data, assertions and parallel safety: see `.claude/rules/
 - One-off analysis, comparisons and audits go to `reports/` as
   `report_<topic>_<YYYY-MM-DD-HH-MM>.md` and are kept. Documents meant to be kept
   live in `docs/`.
+- After a task, the summary in the chat is short and in plain words: what
+  was done, what went wrong, contradictions found, open questions, and
+  suggestions. No technical detail (line numbers, counts, before/after
+  text) unless the prompt asks for it. If details are worth keeping, put
+  them in a report file under reports/ and give its path.
 
 ### README and this file
 
