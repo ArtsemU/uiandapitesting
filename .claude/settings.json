@@ -1,0 +1,35 @@
+{
+  "includeGitInstructions": false,
+  "permissions": {
+    "allow": [
+      "Bash(mvn test *)",
+      "PowerShell(mvn test *)"
+    ],
+    "ask": [
+      "Edit(pom.xml)"
+    ],
+    "deny": [
+      "Bash(git add *)", "Bash(git commit *)", "Bash(git push *)",
+      "Bash(git checkout *)", "Bash(git switch *)", "Bash(git branch *)",
+      "Bash(git stash *)", "Bash(git reset *)", "Bash(git restore *)",
+      "Bash(git merge *)", "Bash(git rebase *)", "Bash(git tag *)",
+      "Bash(git clean *)", "Bash(git worktree *)",
+      "PowerShell(git add *)", "PowerShell(git commit *)",
+      "PowerShell(git push *)", "PowerShell(git checkout *)",
+      "PowerShell(git switch *)", "PowerShell(git branch *)",
+      "PowerShell(git stash *)", "PowerShell(git reset *)",
+      "PowerShell(git restore *)", "PowerShell(git merge *)",
+      "PowerShell(git rebase *)", "PowerShell(git tag *)",
+      "PowerShell(git clean *)", "PowerShell(git worktree *)",
+      "Bash(git pull *)", "Bash(git cherry-pick *)", "Bash(git revert *)",
+      "Bash(git rm *)", "Bash(git mv *)", "Bash(git apply *)", "Bash(git am *)",
+      "Bash(git -C *)",
+      "PowerShell(git pull *)", "PowerShell(git cherry-pick *)", "PowerShell(git revert *)",
+      "PowerShell(git rm *)", "PowerShell(git mv *)", "PowerShell(git apply *)", "PowerShell(git am *)",
+      "PowerShell(git -C *)",
+      "Edit(CLAUDE.md)",
+      "Edit(README.md)",
+      "Edit(.claude/**)"
+    ]
+  }
+}
