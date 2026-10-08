@@ -272,6 +272,14 @@
           <simulationClass>performance.BookstoreGatlingSimulation</simulationClass>
         </configuration>
       </plugin>
+      <!-- Playwright:
+       mvn exec:java -D exec.mainClass=com.microsoft.playwright.CLI -D exec.args="codegen https://www.google.com"
+       -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.5.0</version>
+      </plugin>
     </plugins>
   </build>
 
