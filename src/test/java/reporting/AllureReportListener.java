@@ -20,14 +20,12 @@ import java.util.stream.Stream;
 
 /**
  * Regenerates the Allure HTML report ({@code mvn allure:report}) when a suite
- * finishes, pass or fail, so IDE runs that bypass Maven still get a fresh report.
- * Each run gets its own folder, allure-report/report-yyyyMMdd-HHmmss, the same
- * format run-tests-and-report.cmd uses.
+ * finishes, pass or fail, on mvn test and IDE runs alike.
+ * Each run gets its own folder, allure-report/report-yyyyMMdd-HHmmss.
  *
  * Registered through META-INF/services/org.testng.ITestNGListener, the same
  * ServiceLoader mechanism that registers Allure's own listener, so it fires under
- * any TestNG launcher. Fires once per suite; on Maven runs it duplicates the
- * explicit allure:report step, which is harmless.
+ * any TestNG launcher. Fires once per suite.
  *
  * Does nothing when the CI environment variable is "true" (set by GitHub Actions):
  * the workflow generates and uploads the report once per job itself.
@@ -36,7 +34,8 @@ import java.util.stream.Stream;
  * override with -Dallure.report.keep=<n>); older report-yyyyMMdd-HHmmss folders are
  * deleted. Other content of allure-report/ is never touched.
  *
- * A failure to generate or prune reports is logged at ERROR and never fails the run.
+ * A failure to generate a report is logged at ERROR, a failure to prune old ones at WARN;
+ * neither ever fails the run.
  */
 public class AllureReportListener implements ISuiteListener {
     private static final Logger log = LoggerFactory.getLogger(AllureReportListener.class);
@@ -106,7 +105,7 @@ public class AllureReportListener implements ISuiteListener {
                     .sorted(Comparator.comparing((Path dir) -> dir.getFileName().toString()).reversed())
                     .toList();
         } catch (IOException e) {
-            log.error("Old Allure reports not pruned: could not list {}", reportsRoot, e);
+            log.warn("Old Allure reports not pruned: could not list {}", reportsRoot, e);
             return;
         }
         for (Path old : reports.subList(Math.min(keep, reports.size()), reports.size())) {
@@ -114,7 +113,7 @@ public class AllureReportListener implements ISuiteListener {
                 deleteRecursively(old);
                 log.info("Deleted old Allure report {}", old);
             } catch (IOException e) {
-                log.error("Old Allure report not deleted: {}", old, e);
+                log.warn("Old Allure report not deleted: {}", old, e);
             }
         }
     }
@@ -133,7 +132,7 @@ public class AllureReportListener implements ISuiteListener {
         } catch (NumberFormatException ignored) {
             // reported below
         }
-        log.error("Old Allure reports not pruned: -D{}={} is not a positive integer", KEEP_PROPERTY, value);
+        log.warn("Old Allure reports not pruned: -D{}={} is not a positive integer", KEEP_PROPERTY, value);
         return null;
     }
 

@@ -8,6 +8,17 @@ Java/Selenium UI and RestAssured API test automation against demoQA: Page Object
 suites for Text Box, Check Box and Web Tables; API tests for the Bookstore API
 (`BookApiTests`). Java 17, Maven, TestNG, Selenium 4, SLF4J + Log4j2.
 
+## Rules files
+
+Rules for parts of the project live in .claude/rules/. The agent gets
+each file automatically when it opens a file from that part.
+- testing.md — rules for every test
+- ui.md — UI code and UI tests
+- api.md — API code and API tests
+- bdd.md — BDD feature files and glue code
+- ci.md — GitHub Actions workflows
+- reporting.md — test reports
+
 ## Build and test commands
 
 - `mvn test` runs the suite in the root `testng.xml`.
@@ -18,51 +29,20 @@ suites for Text Box, Check Box and Web Tables; API tests for the Bookstore API
   accept only `true` or `false`.
 - UI runs take `-Dheadless=true|false` (default false) and
   `-Dbrowser=CHROME|EDGE|SAFARI` (default CHROME), read directly by
-  `WebDriverFactory`, not by `pom.xml`. Any UI suite on CI (no display) must pass
-  `-Dheadless=true`.
-- `mvn allure:report` builds the local Allure HTML report from
-  `target/allure-results/`. It is a standalone goal, not bound to any Maven
-  lifecycle phase, specifically so a failing test does not stop the build before
-  the report step runs. `run-tests-and-report.cmd` runs a test command followed
-  by `mvn allure:report` on its own line (not `&&`), so the report regenerates
-  whether the run passed or failed, and also fires automatically from
-  `AllureReportListener` on any `mvn test`/IDE-native run. The report lands in
-  `allure-report/report-<timestamp>/` — a single-file `index.html` (Allure 3
-  `singleFile`), outside `target/` so `mvn clean` never wipes it. Override the
-  destination per run with `-Dallure.report.directory=<path>`.
+  `WebDriverFactory`, not by `pom.xml`.
 
 ## Architecture
 
 Three layers, driven strictly top-down: **Tests → Steps → Pages → BasePage**.
 Tests call Steps only, never Pages directly.
 
-- Pages hold `By` locators as private fields and expose actions and getters. No
-  assertions. Element interaction goes through the `BasePage` helpers, not
-  `WebElement` methods directly, so waits stay consistent.
-- Steps compose page objects into business-level actions and own SLF4J logging.
-  No assertions, no `By`, `WebElement` or driver access.
 - Tests call Steps only and hold all assertions. No helper methods: anything
   reusable belongs in the steps layer.
-- Test configuration methods (`@BeforeMethod` / `@AfterMethod`) carry
-  `alwaysRun = true`: group-filtered suites skip them otherwise, and for cleanup
-  that failure is silent.
-- `BaseUITest.currentDriver()` is a read-only static accessor used only by
-  reporting listeners (`ScreenshotOnFailureListener`) to reach the current
-  thread's driver from outside the test. It is not for test or Steps code —
-  tests still go through the Steps layer exclusively; this is a deliberate,
-  narrow exception for infrastructure that runs outside the normal call chain.
 
 ### Layer boundaries
 
 - Objects built through a builder are passed whole. Never unpack them into
   positional parameters at a layer boundary.
-- Type conversion between the domain type and the string form the DOM uses lives
-  in the page layer only.
-- **UI only:** page objects return domain objects, not individual cell values,
-  when the caller needs more than one field.
-- **API only:** clients return the raw Response. They do not deserialise and do
-  not check status codes. Tests and glue assert on the status, then deserialise
-  with `response.as(Model.class)`.
 
 ### Where things go
 
@@ -92,28 +72,6 @@ Tests call Steps only, never Pages directly.
   not copy non-Java files from there onto the test classpath.
 - `schemas/` — JSON Schemas for API responses (`<resource>-schema.json`).
 
-## CI/CD
-
-GitHub Actions workflows under `.github/workflows/`:
-
-- `ci-workflow.yml` — runs on every push and pull request. Push and PR both run
-  a fast API + UI smoke check (job `simple_check`); PRs and merges into `master`
-  additionally run the broader regression suites and the BDD suite (job `bdd`).
-- `nightly.yml` — scheduled (cron) and manually dispatchable; runs the full
-  regression suite (job `full_regression`), independent of any push/PR/merge
-  event.
-- `cd-simulate.yml` — manual, simulated deploy pipeline through qa1 → stage →
-  prod GitHub Environments (real approval/wait-timer gating, placeholder deploy
-  step). No tests run here; untouched by the reporting work below.
-
-Every job in `ci-workflow.yml` and `nightly.yml` ends with two `if: always()`
-steps, after its last test step: generate the Allure report
-(`mvn allure:report`) and upload it via `actions/upload-artifact` (artifact
-names `allure-report-simple_check`, `allure-report-bdd`,
-`allure-report-full_regression`; `retention-days: 2`). This runs regardless of
-pass/fail and does not change surefire's own failure behaviour — the exit code
-that gates branch protection is untouched.
-
 ## Test specifications
 
 Test cases live in Confluence, space `Uiandapite`, under **Test Project**:
@@ -125,107 +83,9 @@ Confluence is read-only. Never create, update or delete pages there.
 
 ## Conventions
 
-### Locators
-
-- Every locator uses `By.xpath()` — nothing else. See
-  `docs/decisions/0001-xpath-for-all-locators.md`.
-- Always scope locators to a container. demoQA reuses the same id in the form and
-  in the output block, so an unscoped locator silently resolves to the wrong
-  element.
-- Positional indexes only where no stable attribute exists (table columns,
-  nearest ancestor). A positional locator does not break when the page changes —
-  it silently starts matching something else.
-
-### Test identifiers
-
-- Every test carries `@Test(priority = N, testName = "XX-000: short description",
-  groups = {"smoke"|"regression"})`, description under ~60 characters.
-- `priority` is the numeric part of the ID (`BS-010` → `10`).
-  `priority == 1` → `smoke`, everything else → `regression`, per functional area.
-- `XX` is the functional area, not the technology: `TB` Text Box, `CB` Check
-  Box, `WT` Web Tables, `BS` Books Store. `000` is a three-digit number.
-- Test IDs are never reused, even after a test is deleted.
-
-### Test data
-
-- Fixed and deterministic. No random values, no Faker; vary multiple records with
-  a counter.
-- **UI only:** constants holding values read from the page under test are named
-  `EXPECTED_OUTPUT_<SCOPE>` — the application's internal values, not UI labels.
-- Exception: API usernames are built from the thread name plus a timestamp. The
-  demoQA user registry is shared and global, so a fixed name would collide; the
-  thread name is what keeps parallel threads apart. The value is never asserted
-  on.
-
-### Assertions
-
-- UI tests use `SoftAssert` for result checks. API tests use hard `Assert`
-  throughout. Preconditions use hard `Assert` in every layer — if setup did not
-  happen, the test must stop.
-- Every assertion carries a failure message stating which behaviour is broken,
-  not the values.
-- API schema checks use draft-04 JSON Schema only — the RestAssured validator
-  silently ignores keywords from newer drafts. Order per response: status, then
-  schema, then deserialisation.
-
-### Parallel safety
-
-- Suites run with `parallel="methods"`: TestNG shares one test-class instance
-  across threads. Mutable instance fields in test classes must be thread-confined
-  (`ThreadLocal`, cleared in `@AfterMethod(alwaysRun = true)`). A thread-safe
-  collection is not enough — it prevents corruption, not cross-test interference.
-
 ### BDD (Cucumber)
 
-- Cucumber 7.x through `cucumber-testng` with PicoContainer. All Cucumber
-  artifacts take their version from `cucumber-bom`.
-- Scenarios duplicate existing test cases; they never replace TestNG tests or
-  change their behaviour. Expected values shared by both live in
-  `testing.testdata`. A scenario may cover a subset of its test case's checks;
-  do not extend it to match its spec unless asked.
-- Tags replace `priority` / `testName` / `groups`: the test case ID (`@BS-001`),
-  `@smoke` or `@regression` by the same rule as TestNG groups, and `@api` or
-  `@ui`.
-- Gherkin: third person ("the user"), declarative — behaviour, not UI mechanics
-  or HTTP calls. One `When` per scenario, except end-to-end journeys (e.g. BS-001),
-  which alternate `When` / `Then`. Actions never go into `Then` steps.
-- Cucumber Expressions; regular expressions only where they substantially
-  simplify the binding.
-- Step definitions call `*Steps` / `ApiSteps` only — no locators, `WebElement`
-  or RestAssured calls. Missing behaviour goes into the steps layer.
-- Assertions only in `Then` steps, same rules as TestNG; for UI, each `Then`
-  creates its own `SoftAssert` and calls `assertAll()` at its end.
-- State between steps only through the PicoContainer-injected scenario context.
-  No static fields in glue or hooks.
-- Step definition classes are organised by domain concept, not by feature file.
-  Search existing glue before adding a step — no near-duplicate phrasings.
-- API cleanup runs in an `@After("@api")` hook; a failed cleanup is logged and
-  never fails the scenario.
 - BDD runs through its own suite XML, not the root `testng.xml`.
-
-### Reporting
-
-- UI `*Steps` methods carry Allure `@Step("...")` alongside their existing
-  SLF4J log line — both stay, they serve different readers (console vs Allure
-  report). This applies to every public method in the Steps layer, not just
-  today's three classes: any new UI Steps method gets `@Step` too. Use
-  parameter placeholders (`{param}`, or `{object.field}` for one meaningful
-  field of an object parameter) rather than leaving the annotation's value
-  empty or dumping a whole object's `toString()`.
-- API request/response logging goes through the `AllureRestAssured` filter,
-  wired once into the shared `RequestSpecBuilder` in `api.ApiSpec`. Individual
-  tests never add their own request/response logging. The `Authorization`
-  header is redacted in the attachment; request/response bodies are not
-  (`createUser`/`generateToken` bodies carry the password/token in plain text)
-  — accepted, since both already appear elsewhere (console log, `api.properties`).
-- `ScreenshotOnFailureListener` attaches a PNG to Allure on `onTestFailure`,
-  for classes extending `BaseUITest` only. API and BDD failures are skipped
-  (BDD: logged nothing, since Cucumber's own `@After` hook already closed the
-  driver before TestNG sees the failure; plain API classes: skipped silently).
-  A failure inside the screenshot capture itself is caught and logged, never
-  rethrown — it must never mask the real test failure. BDD UI scenarios
-  getting no screenshots is a known, accepted gap (see TODO.md); fixing it
-  means capturing in `UiHooks`' `@After`, not this listener.
 
 ## Working agreements
 
@@ -240,8 +100,9 @@ Confluence is read-only. Never create, update or delete pages there.
   a literal-to-constant refactor, which of two equivalent structures to use.
   State each in one line in your summary.
 - Stop and ask only when: a spec and the code disagree; a dependency would be
-  added or changed; a rule in this file would have to be broken; or the change
-  is hard to undo.
+  added or changed; a rule in this file would have to be broken; the change is
+  hard to undo; or the prompt does not match the current state of the repo
+  (the work is already done, or what it refers to is missing).
 - After changing code outside the task's own scope, run the affected existing
   suite and report the result.
 
@@ -270,12 +131,24 @@ Confluence is read-only. Never create, update or delete pages there.
 - One-off analysis, comparisons and audits go to `reports/` as
   `report_<topic>_<YYYY-MM-DD-HH-MM>.md` and are kept. Documents meant to be kept
   live in `docs/`.
+- After a task, the summary in the chat is short and in plain words: what
+  was done, what went wrong, contradictions found, open questions, and
+  suggestions. No technical detail (line numbers, counts, before/after
+  text) unless the prompt asks for it. If details are worth keeping, put
+  them in a report file under reports/ and give its path.
 
 ### README and this file
 
 - Do not edit README.md unless explicitly asked — it is a stable overview.
 - Do not edit CLAUDE.md. If a rule is missing, wrong or contradicts the code, say
   so and propose the wording.
+- Agent instructions live only in the root CLAUDE.md and .claude/rules/.
+  Do not create nested CLAUDE.md files; area-specific rules go into a
+  path-scoped file under .claude/rules/. Each rules file starts with its
+  paths: frontmatter, then a "# Description" section: two or three simple
+  sentences on what the rules are for and when the agent gets them.
+  Pointers to a rules file (lines elsewhere that send the reader to it)
+  name the file, never the folders or globs it covers.
 
 ## Dependencies
 

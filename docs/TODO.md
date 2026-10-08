@@ -28,10 +28,10 @@
 
 ## Later
 
-- [ ] **Reporting.** Nothing beyond console output and surefire XML. Decide
+- [x] **Reporting.** Nothing beyond console output and surefire XML. Decide
   between Allure, ExtentReports or the surefire HTML report.
 
-- [ ] **Screenshots on failure.** Listener work — `ITestListener.onTestFailure`,
+- [x] **Screenshots on failure.** Listener work — `ITestListener.onTestFailure`,
   not try/catch in tests. Depends on the reporting decision.
 
 - [x] ~~Enable `driver.quit()` behind `-Dkeep.browser=true`~~ Resolved
