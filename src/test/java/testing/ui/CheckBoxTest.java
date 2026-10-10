@@ -11,9 +11,9 @@ public class CheckBoxTest extends BaseUITest {
     @Test(priority = 1, testName = "CB-001: check Desktop selects Desktop, Notes, Commands", groups = {"smoke"})
     public void checkDesktopSelectsChildren() {
         cbSteps().openCheckBoxPage();
-        cbSteps().expandNode("Home");
-        cbSteps().expandNode("Desktop");
-        cbSteps().selectCheckbox("Desktop");
+        cbSteps().expandNode(CheckBoxTestData.NODE_HOME);
+        cbSteps().expandNode(CheckBoxTestData.NODE_DESKTOP);
+        cbSteps().selectCheckbox(CheckBoxTestData.NODE_DESKTOP);
 
         List<String> selectedItems = cbSteps().getSelectedItems();
         SoftAssert softAssert = new SoftAssert();
@@ -25,11 +25,11 @@ public class CheckBoxTest extends BaseUITest {
     @Test(priority = 2, testName = "CB-002: check Office+Downloads selects both subtrees", groups = {"regression"})
     public void checkOfficeAndDownloadsSelectsSubtrees() {
         cbSteps().openCheckBoxPage();
-        cbSteps().expandNode("Home");
-        cbSteps().expandNode("Documents");
-        cbSteps().expandNode("Office");
-        cbSteps().selectCheckbox("Office");
-        cbSteps().selectCheckbox("Downloads");
+        cbSteps().expandNode(CheckBoxTestData.NODE_HOME);
+        cbSteps().expandNode(CheckBoxTestData.NODE_DOCUMENTS);
+        cbSteps().expandNode(CheckBoxTestData.NODE_OFFICE);
+        cbSteps().selectCheckbox(CheckBoxTestData.NODE_OFFICE);
+        cbSteps().selectCheckbox(CheckBoxTestData.NODE_DOWNLOADS);
 
         List<String> selectedItems = cbSteps().getSelectedItems();
         SoftAssert softAssert = new SoftAssert();
@@ -41,9 +41,9 @@ public class CheckBoxTest extends BaseUITest {
     @Test(priority = 3, testName = "CB-003: check Notes only selects just Notes", groups = {"regression"})
     public void checkNotesOnlySelectsNotes() {
         cbSteps().openCheckBoxPage();
-        cbSteps().expandNode("Home");
-        cbSteps().expandNode("Desktop");
-        cbSteps().selectCheckbox("Notes");
+        cbSteps().expandNode(CheckBoxTestData.NODE_HOME);
+        cbSteps().expandNode(CheckBoxTestData.NODE_DESKTOP);
+        cbSteps().selectCheckbox(CheckBoxTestData.NODE_NOTES);
 
         List<String> selectedItems = cbSteps().getSelectedItems();
         SoftAssert softAssert = new SoftAssert();

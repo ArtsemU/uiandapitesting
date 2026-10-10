@@ -2,6 +2,7 @@ package bdd;
 
 import api.models.CreateUserResponse;
 import api.models.ErrorResponse;
+import api.models.Token;
 import api.models.UserCredentials;
 import api.steps.ApiSteps;
 import io.cucumber.java.en.Then;
@@ -47,26 +48,34 @@ public class UserStepDefs {
         Response rs = context.getLastResponse();
         Assert.assertEquals(rs.statusCode(), 400, "A password breaking the rules should be rejected");
         ErrorResponse error = rs.as(ErrorResponse.class);
-        Assert.assertEquals(error.getCode(), "1300", "A rejected password should report code 1300");
+        Assert.assertEquals(error.getCode(), BookstoreTestData.PASSWORD_RULES_CODE, "A rejected password should report the password-rules error code");
         Assert.assertEquals(error.getMessage(), BookstoreTestData.PASSWORD_RULES_MESSAGE,
                 "A rejected password should report the password-rules message");
     }
 
     @When("the user logs in")
     public void theUserLogsIn() {
-        context.setLastResponse(apiSteps.generateToken(context.getCredentials()));
+        Response rs = apiSteps.generateToken(context.getCredentials());
+        context.setLastResponse(rs);
+        // Stored here so later steps never depend on a Then; the status is asserted in the Then that follows.
+        if (rs.statusCode() == 200) {
+            context.setToken(rs.as(Token.class).getToken());
+        }
     }
 
     @When("the user deletes their account")
     public void theUserDeletesTheirAccount() {
-        context.setLastResponse(apiSteps.removeUser(context.getUserId(), context.getToken()));
+        Response rs = apiSteps.removeUser(context.getUserId(), context.getToken());
+        context.setLastResponse(rs);
+        // Deleted by the scenario itself: the cleanup hook must not try again.
+        if (rs.statusCode() == 204) {
+            context.forgetCreatedUser(context.getUserId());
+        }
     }
 
     @Then("the user's account can no longer be found")
     public void theUsersAccountCanNoLongerBeFound() {
         Assert.assertEquals(context.getLastResponse().statusCode(), 204, "Deleting the account should succeed");
-        // Deleted by the scenario itself: the cleanup hook must not try again.
-        context.forgetCreatedUser(context.getUserId());
 
         Response rs = apiSteps.getUserData(context.getUserId(), context.getToken());
         Assert.assertEquals(rs.statusCode(), 401, "Reading a deleted user should be rejected");

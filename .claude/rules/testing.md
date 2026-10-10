@@ -30,6 +30,8 @@ and api.md. The agent gets this file automatically when it opens a test.
 - Exception: tests in the `performance` package reuse the ID of the functional
   test case they put under load, and use `groups = {"performance"}`, which keeps
   them out of `smoke` and `regression` runs.
+- Exception: BDD scenarios carry the ID of the test case they cover as a
+  tag (e.g. @TB-002), alongside the TestNG test with the same ID.
 
 ## Test data
 

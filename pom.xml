@@ -227,6 +227,13 @@
       <version>1.63.0</version>
       <scope>compile</scope>
     </dependency>
+    <!-- Source: https://mvnrepository.com/artifact/com.aventstack/extentreports -->
+    <dependency>
+      <groupId>com.aventstack</groupId>
+      <artifactId>extentreports</artifactId>
+      <version>5.1.2</version>
+      <scope>compile</scope>
+    </dependency>
 
   </dependencies>
 
@@ -271,6 +278,14 @@
         <configuration>
           <simulationClass>performance.BookstoreGatlingSimulation</simulationClass>
         </configuration>
+      </plugin>
+      <!-- Playwright:
+       mvn exec:java -D exec.mainClass=com.microsoft.playwright.CLI -D exec.args="codegen https://www.google.com"
+       -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.5.0</version>
       </plugin>
     </plugins>
   </build>

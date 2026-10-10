@@ -37,7 +37,8 @@ Three layers, driven strictly top-down: **Tests → Steps → Pages → BasePage
 Tests call Steps only, never Pages directly.
 
 - Tests call Steps only and hold all assertions. No helper methods: anything
-  reusable belongs in the steps layer.
+  reusable belongs in the steps layer. This applies to TestNG test classes; 
+  private helpers in BDD step definitions are allowed.
 
 ### Layer boundaries
 
@@ -140,8 +141,9 @@ Confluence is read-only. Never create, update or delete pages there.
 ### README and this file
 
 - Do not edit README.md unless explicitly asked — it is a stable overview.
-- Do not edit CLAUDE.md. If a rule is missing, wrong or contradicts the code, say
-  so and propose the wording.
+- Do not edit CLAUDE.md or anything under .claude/; both are blocked by
+  .claude/settings.json. If a rule is missing, wrong or contradicts the
+  code, say so and propose the wording; the user makes the change.
 - Agent instructions live only in the root CLAUDE.md and .claude/rules/.
   Do not create nested CLAUDE.md files; area-specific rules go into a
   path-scoped file under .claude/rules/. Each rules file starts with its

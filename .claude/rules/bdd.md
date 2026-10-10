@@ -21,12 +21,19 @@ a feature file or BDD code.
   `@smoke` or `@regression` by the same rule as TestNG groups, and `@api` or
   `@ui`.
 - Gherkin: third person ("the user"), declarative — behaviour, not UI mechanics
-  or HTTP calls. One `When` per scenario, except end-to-end journeys (e.g. BS-001),
-  which alternate `When` / `Then`. Actions never go into `Then` steps.
+  or HTTP calls. One `When` per scenario, except end-to-end journeys
+  (e.g. BS-001), which alternate `When` / `Then`.
+- `When` and `Then` steps: actions never go into `Then` steps. `Then` steps may
+  make read-only calls to verify the result, but never calls that change
+  server state, and they do not change scenario state that later steps depend
+  on (for example, storing a token or removing a user from cleanup tracking).
+  `When` steps store response data that later steps need (token, ids) in the
+  scenario context.
 - Cucumber Expressions; regular expressions only where they substantially
   simplify the binding.
-- Step definitions call `*Steps` / `ApiSteps` only — no locators, `WebElement`
-  or RestAssured calls. Missing behaviour goes into the steps layer.
+- Step definitions call `*Steps` / `ApiSteps` only — no locators and no direct
+  request building; reading the Response returned by `ApiSteps` (status code,
+  deserialisation) is fine.
 - Assertions only in `Then` steps, same rules as TestNG; for UI, each `Then`
   creates its own `SoftAssert` and calls `assertAll()` at its end. Exception:
   precondition checks in `Given` steps use hard `Assert`, as in every other
