@@ -23,7 +23,11 @@ Follow these steps in order.
    were already loaded, so you can quote them exactly. Do not review from
    memory of the rules.
 3. Read every file under review in full.
-4. Compare each change with the rules from step 2 and sort what you find
+4. Some rules compare files with each other: shared test data, reused
+   values, duplicate test IDs. For these, search the whole repository with
+   Grep before deciding, even if you were asked to review only some files.
+   Never state a fact about a file you have not read or searched.
+5. Compare each change with the rules from step 2 and sort what you find
    into the two report sections below.
 
 ## Boundaries
