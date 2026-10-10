@@ -429,7 +429,7 @@ public class BookApiTests {
         Response rs = apiSteps.createUserCall(userCredentials);
         Assert.assertEquals(rs.statusCode(), 400, "Password " + violation + " should be rejected");
         ErrorResponse errorResponse = rs.as(ErrorResponse.class);
-        Assert.assertEquals(errorResponse.getCode(), "1300", "Password " + violation + " should report code 1300");
+        Assert.assertEquals(errorResponse.getCode(), BookstoreTestData.PASSWORD_RULES_CODE, "Password " + violation + " should report the password-rules error code");
         Assert.assertEquals(errorResponse.getMessage(), BookstoreTestData.PASSWORD_RULES_MESSAGE,
                 "Password " + violation + " should report the password-rules message");
     }

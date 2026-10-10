@@ -17,7 +17,7 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: 'maven'   # <-- added
+          cache: 'maven'
 
       - name: Run cicd_simple_commit suite
         run: mvn -B test -DsuiteXmlFile=src/test/resources/suite/cicd_simple_commit.xml
@@ -36,10 +36,12 @@ jobs:
       # Report and upload run even when a test step failed; the job still fails on test failures.
       - name: Generate Allure report
         if: always()
+        continue-on-error: true
         run: mvn -B allure:report
 
       - name: Upload Allure report
         if: always()
+        continue-on-error: true
         uses: actions/upload-artifact@v7
         with:
           name: allure-report-simple_check
@@ -60,7 +62,7 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: 'maven'   # <-- added
+          cache: 'maven'
 
       - name: Run BDD suite (headless)
         run: mvn -B test -DsuiteXmlFile=src/test/resources/suite/bdd.xml -Dheadless=true
@@ -68,10 +70,12 @@ jobs:
       # Report and upload run even when a test step failed; the job still fails on test failures.
       - name: Generate Allure report
         if: always()
+        continue-on-error: true
         run: mvn -B allure:report
 
       - name: Upload Allure report
         if: always()
+        continue-on-error: true
         uses: actions/upload-artifact@v7
         with:
           name: allure-report-bdd

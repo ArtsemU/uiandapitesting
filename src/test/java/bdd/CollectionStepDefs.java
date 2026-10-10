@@ -1,7 +1,6 @@
 package bdd;
 
 import api.models.Book;
-import api.models.Token;
 import api.models.UserInfo;
 import api.steps.ApiSteps;
 import io.cucumber.java.en.Then;
@@ -21,11 +20,8 @@ public class CollectionStepDefs {
 
     @Then("the user can see their empty collection")
     public void theUserCanSeeTheirEmptyCollection() {
-        Response rs = context.getLastResponse();
-        Assert.assertEquals(rs.statusCode(), 200, "Token generation should succeed");
-        Token token = rs.as(Token.class);
-        Assert.assertNotNull(token.getToken(), "Token generation should return a token");
-        context.setToken(token.getToken());
+        Assert.assertEquals(context.getLastResponse().statusCode(), 200, "Token generation should succeed");
+        Assert.assertNotNull(context.getToken(), "Token generation should return a token");
 
         assertCollectionIsEmpty();
     }

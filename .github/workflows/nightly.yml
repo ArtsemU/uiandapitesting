@@ -35,10 +35,12 @@ jobs:
       # Report and upload run even when a test step failed; the job still fails on test failures.
       - name: Generate Allure report
         if: always()
+        continue-on-error: true
         run: mvn -B allure:report
 
       - name: Upload Allure report
         if: always()
+        continue-on-error: true
         uses: actions/upload-artifact@v7
         with:
           name: allure-report-full_regression

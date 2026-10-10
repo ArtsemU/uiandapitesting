@@ -14,5 +14,5 @@ automatically when it opens a workflow file.
 - Every job that runs tests ends with two `if: always()` steps after
   its last test step: build the Allure report (`mvn allure:report`) and
   upload it with `actions/upload-artifact` as `allure-report-<job name>`.
-  Keep both steps in every such job; they must not change whether the
-  job passes or fails.
+  Keep both steps in every such job. Both carry `continue-on-error: true`,
+  so a report failure never fails the job.
