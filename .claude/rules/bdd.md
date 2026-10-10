@@ -22,11 +22,14 @@ a feature file or BDD code.
   `@ui`.
 - Gherkin: third person ("the user"), declarative — behaviour, not UI mechanics
   or HTTP calls. One `When` per scenario, except end-to-end journeys (e.g. BS-001),
-  which alternate `When` / `Then`. Actions never go into `Then` steps.
+  which alternate `When` / `Then`. Actions never go into `Then` steps. Then steps 
+  also do not change scenario state that later steps depend on (for example,
+  storing a token or removing a user from cleanup tracking).
 - Cucumber Expressions; regular expressions only where they substantially
   simplify the binding.
-- Step definitions call `*Steps` / `ApiSteps` only — no locators, `WebElement`
-  or RestAssured calls. Missing behaviour goes into the steps layer.
+- Step definitions call `*Steps` / `ApiSteps` only — no locators and no direct 
+  request building; reading the Response returned by ApiSteps 
+  (status code, deserialisation) is fine
 - Assertions only in `Then` steps, same rules as TestNG; for UI, each `Then`
   creates its own `SoftAssert` and calls `assertAll()` at its end. Exception:
   precondition checks in `Given` steps use hard `Assert`, as in every other

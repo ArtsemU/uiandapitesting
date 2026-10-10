@@ -37,7 +37,8 @@ Three layers, driven strictly top-down: **Tests → Steps → Pages → BasePage
 Tests call Steps only, never Pages directly.
 
 - Tests call Steps only and hold all assertions. No helper methods: anything
-  reusable belongs in the steps layer.
+  reusable belongs in the steps layer. This applies to TestNG test classes; 
+  private helpers in BDD step definitions are allowed.
 
 ### Layer boundaries
 
