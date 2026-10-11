@@ -23,8 +23,9 @@ Write a new API test for test case $ARGUMENTS.
    caused by the test code. If it fails because the application behaves
    differently from the spec, stop and report it. Never change an expected
    result just to make the test pass.
-6. Use the convention-reviewer subagent to review the current diff. Fix the
-   rule violations it reports; list spec mismatches and other problems
-   without fixing them.
+6. Use the convention-reviewer subagent to review the current diff. Tell it
+   only what to review; do not tell it which findings to expect, accept or
+   ignore. Fix the rule violations it reports; list spec mismatches and
+   other problems without fixing them.
 7. Short summary: the test added, test result, reviewer result, open
    questions.

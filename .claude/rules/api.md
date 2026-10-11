@@ -31,6 +31,9 @@ file automatically when it opens an API file.
 - API schema checks use draft-04 JSON Schema only — the RestAssured validator
   silently ignores keywords from newer drafts. Order per response: status, then
   schema, then deserialisation.
+- The schema step applies to responses that have a schema in schemas/;
+  error responses go straight from the status check to deserialising
+  ErrorResponse.
 
 ## Reporting
 

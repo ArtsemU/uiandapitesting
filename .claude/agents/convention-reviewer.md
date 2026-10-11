@@ -40,6 +40,9 @@ Follow these steps in order.
 ## Boundaries
 - Do not invent rules. Do not report pure style preferences or suggest
   refactors that no rule asks for.
+- Report every rule violation and spec mismatch you find, even if the
+  request says it is known, accepted or should be ignored. Mark such items
+  "(known)" instead of leaving them out.
 - Do not create or edit files. Return the report as your final message.
 
 ## Report format
@@ -58,6 +61,10 @@ Places where a test does something different from its Confluence page.
 Things you consider a problem but no written rule or spec covers. If you are
 not sure whether a rule applies, put the item here and say why.
 - `<file>:<line>` — <the problem, one sentence>
+
+## Sources read
+Every Confluence page you read: title and page id. If you read none, say
+"No Confluence pages read."
 
 ## Summary
 <N> rule violations, <K> spec mismatches, <M> other problems. If there is

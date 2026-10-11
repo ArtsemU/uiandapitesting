@@ -269,8 +269,8 @@ public class BookApiTests {
         Response rsAddBook = apiSteps.addBookToUser(user.getUserID(), isbnNotInCatalogue, token.getToken());
         Assert.assertEquals(rsAddBook.statusCode(), 400, "Adding an unknown ISBN should be rejected");
         ErrorResponse errorResponse = rsAddBook.as(ErrorResponse.class);
-        Assert.assertEquals(errorResponse.getCode(), "1205", "Adding an unknown ISBN should report code 1205");
-        Assert.assertEquals(errorResponse.getMessage(), "ISBN supplied is not available in Books Collection!", "Adding an unknown ISBN should report the correct message");
+        Assert.assertEquals(errorResponse.getCode(), BookstoreTestData.ISBN_NOT_IN_CATALOGUE_CODE, "Adding an unknown ISBN should report the not-in-catalogue error code");
+        Assert.assertEquals(errorResponse.getMessage(), BookstoreTestData.ISBN_NOT_IN_CATALOGUE_MESSAGE, "Adding an unknown ISBN should report the correct message");
 
         log.info("Step #2 - call getUser");
         Response rsUserData = apiSteps.getUserData(user.getUserID(), token.getToken());
@@ -432,5 +432,32 @@ public class BookApiTests {
         Assert.assertEquals(errorResponse.getCode(), BookstoreTestData.PASSWORD_RULES_CODE, "Password " + violation + " should report the password-rules error code");
         Assert.assertEquals(errorResponse.getMessage(), BookstoreTestData.PASSWORD_RULES_MESSAGE,
                 "Password " + violation + " should report the password-rules message");
+    }
+
+    @Test(priority = 14, testName = "BS-014: add book with empty ISBN is rejected", groups = {"regression"})
+    public void addBookWithEmptyIsbnIsRejectedTest() {
+        log.info("Precondition - create user and authenticate");
+        UserCredentials userCredentials = UserCredentials.unique();
+        Response rs = apiSteps.createUserCall(userCredentials);
+        Assert.assertEquals(rs.statusCode(), 201, "Precondition failed: user was not created");
+        CreateUserResponse user = rs.as(CreateUserResponse.class);
+
+        Response rsToken = apiSteps.generateToken(userCredentials);
+        Assert.assertEquals(rsToken.statusCode(), 200, "Precondition failed: token was not generated");
+        Token token = rsToken.as(Token.class);
+        createdUsers.get().put(user.getUserID(), token.getToken());
+
+        log.info("Step #1 - call addBook with an empty-string ISBN");
+        Response rsAddBook = apiSteps.addBookToUser(user.getUserID(), "", token.getToken());
+        Assert.assertEquals(rsAddBook.statusCode(), 400, "Adding an empty ISBN should be rejected");
+        ErrorResponse errorResponse = rsAddBook.as(ErrorResponse.class);
+        Assert.assertEquals(errorResponse.getCode(), BookstoreTestData.ISBN_NOT_IN_CATALOGUE_CODE, "Adding an empty ISBN should report the not-in-catalogue error code");
+        Assert.assertEquals(errorResponse.getMessage(), BookstoreTestData.ISBN_NOT_IN_CATALOGUE_MESSAGE, "Adding an empty ISBN should report the not-in-catalogue message");
+
+        log.info("Step #2 - call getUser");
+        Response rsUserData = apiSteps.getUserData(user.getUserID(), token.getToken());
+        Assert.assertEquals(rsUserData.statusCode(), 200, "Expected status : 200");
+        UserInfo userInfo = rsUserData.as(UserInfo.class);
+        Assert.assertEquals(userInfo.getBooks().size(), 0, "Books should remain empty after a rejected add");
     }
 }

@@ -54,6 +54,10 @@ public final class BookstoreTestData {
             }
             """;
 
+    public static final String ISBN_NOT_IN_CATALOGUE_CODE = "1205";
+
+    public static final String ISBN_NOT_IN_CATALOGUE_MESSAGE = "ISBN supplied is not available in Books Collection!";
+
     public static final String PASSWORD_RULES_CODE = "1300";
 
     public static final String PASSWORD_RULES_MESSAGE =
