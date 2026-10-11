@@ -45,6 +45,8 @@ public final class Book {
         this.website = website;
     }
 
+    // Overrides NON_DEFAULT: an unset ISBN is skipped, but "" is sent (BS-014)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public String getIsbn() {
         return isbn;
     }

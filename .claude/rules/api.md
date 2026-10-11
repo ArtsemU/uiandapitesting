@@ -23,14 +23,23 @@ file automatically when it opens an API file.
 
 - Exception: API usernames are built from the thread name plus a timestamp. The
   demoQA user registry is shared and global, so a fixed name would collide; the
-  thread name is what keeps parallel threads apart. The value is never asserted
-  on.
+  thread name is what keeps parallel threads apart. The value is never compared
+  with a fixed literal; comparing it with the name the test itself sent is
+  allowed.
 
 ## Assertions
 
 - API schema checks use draft-04 JSON Schema only — the RestAssured validator
   silently ignores keywords from newer drafts. Order per response: status, then
   schema, then deserialisation.
+- The schema step applies to responses that have a schema in schemas/, and
+  only in the test that owns the contract check (BS-001); other tests go
+  from the status check straight to deserialisation. Error responses go
+  straight from the status check to deserialising ErrorResponse.
+- Tests for empty, null or missing fields check the request body in the
+  log after the first run: it must contain exactly the value the spec
+  describes. An empty string, null and a missing field are three different
+  cases.
 
 ## Reporting
 
