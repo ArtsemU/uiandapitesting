@@ -459,5 +459,6 @@ public class BookApiTests {
         Assert.assertEquals(rsUserData.statusCode(), 200, "Getting the user after a rejected add should succeed");
         UserInfo userInfo = rsUserData.as(UserInfo.class);
         Assert.assertEquals(userInfo.getBooks().size(), 0, "Books should remain empty after a rejected add");
+        Assert.assertEquals(userInfo.getUsername(), userCredentials.getUserName(), "Get user should return the name of the created user");
     }
 }
