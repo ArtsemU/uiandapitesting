@@ -19,13 +19,14 @@ Write a new API test for test case $ARGUMENTS.
    new ones only where the spec needs them.
 4. Check whether the existing suite XMLs already pick the new test up (by
    class or by group). Change them only if they do not.
-5. Run only the new test: mvn test -Dtest=<Class>#<method>. Fix failures
-   caused by the test code. If it fails because the application behaves
-   differently from the spec, stop and report it. Never change an expected
-   result just to make the test pass.
+5. Run only the new test: mvn test -Dtest=<Class>#<method>. Check the
+   request body in the log: it must contain exactly the values the spec
+   describes. Fix failures caused by the test code. If it fails because
+   the application behaves differently from the spec, stop and report it.
+   Never change an expected result just to make the test pass.
 6. Use the convention-reviewer subagent to review the current diff. Tell it
    only what to review; do not tell it which findings to expect, accept or
    ignore. Fix the rule violations it reports; list spec mismatches and
    other problems without fixing them.
-7. Short summary: the test added, test result, reviewer result, open
-   questions.
+7. Short summary of the whole run, not only the last step: the test added,
+   test result, reviewer result, open questions.

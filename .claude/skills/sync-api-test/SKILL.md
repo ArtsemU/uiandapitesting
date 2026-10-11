@@ -29,12 +29,15 @@ Bring the API test for test case $ARGUMENTS in line with its spec.
    Reuse existing ApiSteps methods and test data; add new ones only where
    needed.
 5. List the suite XMLs that run this test. Do not change any suite XML.
-6. Run only this test. Fix failures caused by the test code. If it fails
-   because the application behaves differently from the spec, stop and
-   report it. Never change an expected result just to make the test pass.
+6. Run only this test. Check the request body in the log: it must contain
+   exactly the values the spec describes. Fix failures caused by the test
+   code. If it fails because the application behaves differently from the
+   spec, stop and report it. Never change an expected result just to make
+   the test pass.
 7. Use the convention-reviewer subagent to review the current diff. Tell
    it only what to review; do not tell it which findings to expect, accept
    or ignore. Fix the rule violations it reports; list spec mismatches and
    other problems without fixing them.
-8. Short summary: the delta found, what changed, test result, reviewer
-   result, the suites that run the test, open
+8. Short summary of the whole run, not only the last step: the delta
+   found, what changed, test result, reviewer result, the suites that run
+   the test, open questions.

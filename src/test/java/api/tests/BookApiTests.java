@@ -59,19 +59,19 @@ public class BookApiTests {
 
         log.info("Step #2 - generate token");
         Response rsToken = apiSteps.generateToken(userCredentials);
-        Assert.assertEquals(rsToken.statusCode(), 200, "Expected status : 200");
+        Assert.assertEquals(rsToken.statusCode(), 200, "Token generation for the new user should succeed");
         Token token = rsToken.as(Token.class);
         Assert.assertNotNull(token.getToken(), "Token is null");
 
         log.info("Step #3 - get user data");
         Response rsUserData = apiSteps.getUserData(user.getUserID(), token.getToken());
-        Assert.assertEquals(rsUserData.statusCode(), 200, "Expected status : 200");
+        Assert.assertEquals(rsUserData.statusCode(), 200, "Getting the newly created user should succeed");
         UserInfo userBeforeAdd = rsUserData.as(UserInfo.class);
         Assert.assertEquals(userBeforeAdd.getBooks().size(), 0, "Books should be empty before adding");
 
         log.info("Step #4 - get all Books");
         Response rsBooks = apiSteps.getAllBooks();
-        Assert.assertEquals(rsBooks.statusCode(), 200, "Expected status : 200");
+        Assert.assertEquals(rsBooks.statusCode(), 200, "Getting the book catalogue should succeed");
         MatcherAssert.assertThat("Catalogue response does not match the Books schema",
                 rsBooks.asString(), matchesJsonSchemaInClasspath(BookstoreTestData.BOOKS_SCHEMA));
         Books books = rsBooks.as(Books.class);
@@ -87,7 +87,7 @@ public class BookApiTests {
 
         log.info("Step #7 - get user data");
         Response userAfterAddBookRs = apiSteps.getUserData(user.getUserID(), token.getToken());
-        Assert.assertEquals(userAfterAddBookRs.statusCode(), 200, "Expected status : 200");
+        Assert.assertEquals(userAfterAddBookRs.statusCode(), 200, "Getting the user after adding a book should succeed");
         MatcherAssert.assertThat("Get user response does not match the User schema",
                 userAfterAddBookRs.asString(), matchesJsonSchemaInClasspath(BookstoreTestData.USER_SCHEMA));
         UserInfo userAfterAdd = userAfterAddBookRs.as(UserInfo.class);
@@ -101,7 +101,7 @@ public class BookApiTests {
 
         log.info("Step #9 - get user data");
         Response userAfterRemovingBookRs = apiSteps.getUserData(user.getUserID(), token.getToken());
-        Assert.assertEquals(userAfterRemovingBookRs.statusCode(), 200, "Expected status : 200");
+        Assert.assertEquals(userAfterRemovingBookRs.statusCode(), 200, "Getting the user after removing the book should succeed");
         UserInfo userAfterRemoving = userAfterRemovingBookRs.as(UserInfo.class);
         Assert.assertEquals(userAfterRemoving.getBooks().size(), 0, "User should have no any books");
 
@@ -132,7 +132,7 @@ public class BookApiTests {
         Assert.assertEquals(errorResponse.getMessage(), "User exists!", "Duplicate username should report that the user already exists");
 
         Response rsToken = apiSteps.generateToken(userCredentials);
-        Assert.assertEquals(rsToken.statusCode(), 200, "Expected status : 200");
+        Assert.assertEquals(rsToken.statusCode(), 200, "Token generation for the created user should succeed");
         Token token = rsToken.as(Token.class);
         createdUsers.get().put(user.getUserID(), token.getToken());
     }
@@ -183,7 +183,7 @@ public class BookApiTests {
         Assert.assertEquals(errorResponse.getMessage(), "User not authorized!", "Missing token should report that the user is not authorized");
 
         Response rsToken = apiSteps.generateToken(userCredentials);
-        Assert.assertEquals(rsToken.statusCode(), 200, "Expected status : 200");
+        Assert.assertEquals(rsToken.statusCode(), 200, "Token generation for the created user should succeed");
         Token token = rsToken.as(Token.class);
         createdUsers.get().put(user.getUserID(), token.getToken());
 
@@ -246,7 +246,7 @@ public class BookApiTests {
         Assert.assertEquals(errorResponse.getMessage(), "User not authorized!", "Cross-user access should report that the user is not authorized");
 
         Response rsTokenB = apiSteps.generateToken(userBCredentials);
-        Assert.assertEquals(rsTokenB.statusCode(), 200, "Expected status : 200");
+        Assert.assertEquals(rsTokenB.statusCode(), 200, "Token generation for user B should succeed");
         Token tokenB = rsTokenB.as(Token.class);
         createdUsers.get().put(userB.getUserID(), tokenB.getToken());
     }
@@ -274,7 +274,7 @@ public class BookApiTests {
 
         log.info("Step #2 - call getUser");
         Response rsUserData = apiSteps.getUserData(user.getUserID(), token.getToken());
-        Assert.assertEquals(rsUserData.statusCode(), 200, "Expected status : 200");
+        Assert.assertEquals(rsUserData.statusCode(), 200, "Getting the user after a rejected add should succeed");
         UserInfo userInfo = rsUserData.as(UserInfo.class);
         Assert.assertEquals(userInfo.getBooks().size(), 0, "Books should remain empty after a rejected add");
     }
@@ -316,7 +316,7 @@ public class BookApiTests {
 
             log.info("Step #2 - call getUser");
             Response rsUserData = steps.getUserData(user.getUserID(), token.getToken());
-            Assert.assertEquals(rsUserData.statusCode(), 200, "Expected status : 200");
+            Assert.assertEquals(rsUserData.statusCode(), 200, "Getting the user after a rejected duplicate add should succeed");
             UserInfo userInfo = rsUserData.as(UserInfo.class);
             Assert.assertEquals(userInfo.getBooks().size(), 1, "Books should contain exactly one element after a rejected duplicate add");
 
@@ -379,7 +379,7 @@ public class BookApiTests {
 
         log.info("Step #2 - call getUser");
         Response rsUserData = apiSteps.getUserData(user.getUserID(), token.getToken());
-        Assert.assertEquals(rsUserData.statusCode(), 200, "Expected status : 200");
+        Assert.assertEquals(rsUserData.statusCode(), 200, "Getting the user after clearing an empty collection should succeed");
         UserInfo userInfo = rsUserData.as(UserInfo.class);
         Assert.assertEquals(userInfo.getBooks().size(), 0, "Books should be empty after clearing an empty collection");
         // add check that books was empty BEFORE removeAll method - need update test case
@@ -402,7 +402,7 @@ public class BookApiTests {
         Assert.assertEquals(errorResponse.getMessage(), "User not authorized!", "Invalid token should report that the user is not authorized");
 
         Response rsToken = apiSteps.generateToken(userCredentials);
-        Assert.assertEquals(rsToken.statusCode(), 200, "Expected status : 200");
+        Assert.assertEquals(rsToken.statusCode(), 200, "Token generation for the created user should succeed");
         Token token = rsToken.as(Token.class);
         createdUsers.get().put(user.getUserID(), token.getToken());
     }
@@ -456,7 +456,7 @@ public class BookApiTests {
 
         log.info("Step #2 - call getUser");
         Response rsUserData = apiSteps.getUserData(user.getUserID(), token.getToken());
-        Assert.assertEquals(rsUserData.statusCode(), 200, "Expected status : 200");
+        Assert.assertEquals(rsUserData.statusCode(), 200, "Getting the user after a rejected add should succeed");
         UserInfo userInfo = rsUserData.as(UserInfo.class);
         Assert.assertEquals(userInfo.getBooks().size(), 0, "Books should remain empty after a rejected add");
     }

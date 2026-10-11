@@ -34,6 +34,10 @@ file automatically when it opens an API file.
 - The schema step applies to responses that have a schema in schemas/;
   error responses go straight from the status check to deserialising
   ErrorResponse.
+- Tests for empty, null or missing fields check the request body in the
+  log after the first run: it must contain exactly the value the spec
+  describes. An empty string, null and a missing field are three different
+  cases.
 
 ## Reporting
 
