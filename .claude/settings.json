@@ -31,5 +31,19 @@
       "Edit(README.md)",
       "Edit(.claude/**)"
     ]
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "powershell",
+            "command": "$i = [Console]::In.ReadToEnd() | ConvertFrom-Json; if ($i.stop_hook_active) { exit 0 }; $c = git status --porcelain -- \"*.java\"; if (-not $c) { exit 0 }; $o = mvn -q test-compile 2>&1; if ($LASTEXITCODE -ne 0) { [Console]::Error.WriteLine(($o | Out-String)); exit 2 }",
+            "timeout": 180
+          }
+        ]
+      }
+    ]
   }
 }
