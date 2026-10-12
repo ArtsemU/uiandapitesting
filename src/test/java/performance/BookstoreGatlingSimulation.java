@@ -36,7 +36,9 @@ public class BookstoreGatlingSimulation extends Simulation {
     private static final String BEARER_TOKEN = "Bearer #{token}";
 
     private static final String ITERATION = "iteration";
-    private static final String CREDENTIALS_BODY =
+    // Instance field, not static: a config error (e.g. unknown -Denv) then surfaces as its own
+    // message instead of an ExceptionInInitializerError.
+    private final String credentialsBody =
             "{\"userName\": \"#{userName}\", \"password\": \"" + Config.userPassword() + "\"}";
 
     private final HttpProtocolBuilder httpProtocol = http
@@ -53,11 +55,11 @@ public class BookstoreGatlingSimulation extends Simulation {
                     "perf_g_u" + session.userId() + "_i" + session.getInt(ITERATION) + "_" + System.currentTimeMillis()))
             .exec(thinkThen(http(BookstoreLoadTestData.STEP_CREATE_USER)
                     .post(USER_PATH)
-                    .body(StringBody(CREDENTIALS_BODY)).asJson()
+                    .body(StringBody(credentialsBody)).asJson()
                     .check(status().is(201), jsonPath("$.userID").saveAs("userId"))))
             .exec(thinkThen(http(BookstoreLoadTestData.STEP_GENERATE_TOKEN)
                     .post(TOKEN_PATH)
-                    .body(StringBody(CREDENTIALS_BODY)).asJson()
+                    .body(StringBody(credentialsBody)).asJson()
                     .check(status().is(200), jsonPath("$.token").saveAs("token"))))
             .exec(thinkThen(http(BookstoreLoadTestData.STEP_GET_NEW_USER)
                     .get(USER_BY_ID_PATH)

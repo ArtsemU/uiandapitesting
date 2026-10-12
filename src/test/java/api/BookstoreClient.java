@@ -12,7 +12,7 @@ import io.restassured.response.Response;
  */
 public class BookstoreClient {
 
-    // Base URL for the catalogue call only; overrides the one in ApiSpec.SPEC per request,
+    // Base URL for the catalogue call only; overrides the one in ApiSpec.spec() per request,
     // so it is confined to this instance and safe under parallel runs.
     private final String catalogueBaseUrl;
 
@@ -26,21 +26,21 @@ public class BookstoreClient {
 
     public Response getAllBooks() {
         return RestAssured.given()
-                .spec(ApiSpec.SPEC)
+                .spec(ApiSpec.spec())
                 .baseUri(catalogueBaseUrl)
                 .get("/BookStore/v1/Books");
     }
 
     public Response getBook(String isbn) {
         return RestAssured.given()
-                .spec(ApiSpec.SPEC)
+                .spec(ApiSpec.spec())
                 .queryParam("ISBN", isbn)
                 .get("/BookStore/v1/Book");
     }
 
     public Response addBook(AddBook request, String token) {
         return RestAssured.given()
-                .spec(ApiSpec.SPEC)
+                .spec(ApiSpec.spec())
                 .header("Authorization", "Bearer " + token)
                 .body(request)
                 .post("/BookStore/v1/Books");
@@ -48,7 +48,7 @@ public class BookstoreClient {
 
     public Response removeBook(RemoveBook request, String token) {
         return RestAssured.given()
-                .spec(ApiSpec.SPEC)
+                .spec(ApiSpec.spec())
                 .header("Authorization", "Bearer " + token)
                 .body(request)
                 .delete("/BookStore/v1/Book");
@@ -56,7 +56,7 @@ public class BookstoreClient {
 
     public Response removeAllBooks(String userId, String token) {
         return RestAssured.given()
-                .spec(ApiSpec.SPEC)
+                .spec(ApiSpec.spec())
                 .header("Authorization", "Bearer " + token)
                 .queryParam("UserId", userId)
                 .delete("/BookStore/v1/Books");
