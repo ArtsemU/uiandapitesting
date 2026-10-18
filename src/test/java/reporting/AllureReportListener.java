@@ -1,7 +1,9 @@
 package reporting;
 
+import io.qameta.allure.util.PropertiesUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testng.IExecutionListener;
 import org.testng.ISuite;
 import org.testng.ISuiteListener;
 
@@ -15,17 +17,23 @@ import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
- * Regenerates the Allure HTML report ({@code mvn allure:report}) when a suite
+ * Regenerates the Allure HTML report ({@code mvn allure:report}) when the run
  * finishes, pass or fail, on mvn test and IDE runs alike.
  * Each run gets its own folder, allure-report/report-yyyyMMdd-HHmmss.
  *
  * Registered through META-INF/services/org.testng.ITestNGListener, the same
  * ServiceLoader mechanism that registers Allure's own listener, so it fires under
- * any TestNG launcher. Fires once per suite.
+ * any TestNG launcher. Generates once per run, after all suites (child suites included).
+ *
+ * At the start of the first suite in the JVM, the contents of the Allure results
+ * directory (allure.results.directory, read the same way Allure reads it) are deleted,
+ * so the report holds only this run's results. A failed deletion is logged at WARN.
+ * If the run leaves no test results, no report is generated.
  *
  * Does nothing when the CI environment variable is "true" (set by GitHub Actions):
  * the workflow generates and uploads the report once per job itself.
@@ -37,7 +45,7 @@ import java.util.stream.Stream;
  * A failure to generate a report is logged at ERROR, a failure to prune old ones at WARN;
  * neither ever fails the run.
  */
-public class AllureReportListener implements ISuiteListener {
+public class AllureReportListener implements ISuiteListener, IExecutionListener {
     private static final Logger log = LoggerFactory.getLogger(AllureReportListener.class);
 
     private static final long TIMEOUT_MINUTES = 5;
@@ -46,10 +54,35 @@ public class AllureReportListener implements ISuiteListener {
     private static final Pattern REPORT_FOLDER = Pattern.compile("report-\\d{8}-\\d{6}");
     private static final String KEEP_PROPERTY = "allure.report.keep";
     private static final int DEFAULT_KEEP = 10;
+    private static final String RESULTS_DIRECTORY_PROPERTY = "allure.results.directory";
+    private static final String DEFAULT_RESULTS_DIRECTORY = "allure-results";
+    private static final String TEST_RESULT_SUFFIX = "-result.json";
+
+    // Static: once per JVM, however many suites or listener instances the run has
+    private static final AtomicBoolean resultsCleared = new AtomicBoolean();
 
     @Override
-    public void onFinish(ISuite suite) {
-        if ("true".equals(System.getenv("CI"))) {
+    public void onStart(ISuite suite) {
+        if (isCi() || !resultsCleared.compareAndSet(false, true)) {
+            return;
+        }
+        Path results = resultsDirectory();
+        if (!Files.isDirectory(results)) {
+            return;
+        }
+        try (Stream<Path> children = Files.list(results)) {
+            for (Path child : children.toList()) {
+                deleteRecursively(child);
+            }
+            log.info("Cleared Allure results from previous runs: {}", results);
+        } catch (IOException e) {
+            log.warn("Allure results from previous runs not fully cleared: {}", results, e);
+        }
+    }
+
+    @Override
+    public void onExecutionFinish() {
+        if (isCi()) {
             log.info("CI=true, Allure report left to the workflow");
             return;
         }
@@ -60,10 +93,16 @@ public class AllureReportListener implements ISuiteListener {
             return;
         }
 
+        Path results = resultsDirectory();
+        if (!hasTestResults(results)) {
+            log.info("Allure report not generated: no test results in {}", results);
+            return;
+        }
+
         Path output = projectDir.toPath().resolve("target").resolve("allure-report-listener.log");
         Path reportDir = projectDir.toPath().resolve("allure-report")
                 .resolve("report-" + LocalDateTime.now().format(TIMESTAMP));
-        log.info("Suite '{}' finished, generating Allure report (output: {})", suite.getName(), output);
+        log.info("Run finished, generating Allure report (output: {})", output);
         try {
             Files.createDirectories(output.getParent());
             Process process = new ProcessBuilder(command(reportDir))
@@ -88,6 +127,30 @@ public class AllureReportListener implements ISuiteListener {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             log.error("Allure report not generated: interrupted while waiting for mvn allure:report", e);
+        }
+    }
+
+    private static boolean isCi() {
+        return "true".equals(System.getenv("CI"));
+    }
+
+    // Same lookup as Allure's own results writer: allure.properties, overridable by -D,
+    // relative paths resolved against the working directory
+    private static Path resultsDirectory() {
+        String directory = PropertiesUtils.loadAllureProperties()
+                .getProperty(RESULTS_DIRECTORY_PROPERTY, DEFAULT_RESULTS_DIRECTORY);
+        return Path.of(System.getProperty("user.dir")).resolve(directory);
+    }
+
+    private static boolean hasTestResults(Path results) {
+        if (!Files.isDirectory(results)) {
+            return false;
+        }
+        try (Stream<Path> children = Files.list(results)) {
+            return children.anyMatch(path -> path.getFileName().toString().endsWith(TEST_RESULT_SUFFIX));
+        } catch (IOException e) {
+            log.warn("Could not list Allure results in {}, generating the report anyway", results, e);
+            return true;
         }
     }
 
@@ -136,10 +199,10 @@ public class AllureReportListener implements ISuiteListener {
         return null;
     }
 
-    private static void deleteRecursively(Path dir) throws IOException {
-        try (Stream<Path> paths = Files.walk(dir)) {
-            for (Path path : paths.sorted(Comparator.reverseOrder()).toList()) {
-                Files.delete(path);
+    private static void deleteRecursively(Path path) throws IOException {
+        try (Stream<Path> paths = Files.walk(path)) {
+            for (Path child : paths.sorted(Comparator.reverseOrder()).toList()) {
+                Files.delete(child);
             }
         }
     }

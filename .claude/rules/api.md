@@ -48,6 +48,6 @@ file automatically when it opens an API file.
   tests never add their own request/response logging. The `Authorization`
   header is redacted in the attachment; request/response bodies are not
   (`createUser`/`generateToken` bodies carry the password/token in plain text)
-  — accepted, since both already appear elsewhere: the password in `api.properties`
-  (`ApiLoggingFilter` masks it in the console log), the token in the console log
-  (the `generateToken` response body is not masked).
+  — accepted, since both already appear elsewhere: the password in the config files
+  `config/api*.properties` (`ApiLoggingFilter` masks it in the console log), the
+  token in the console log (the `generateToken` response body is not masked).

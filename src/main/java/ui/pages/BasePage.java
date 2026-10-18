@@ -23,7 +23,7 @@ public class BasePage  {
         );
     }
 
-    protected void click(WebElement element) {
+    public void click(WebElement element) {
         ((JavascriptExecutor) driver).executeScript(
                 "arguments[0].scrollIntoView(true);", element);
         wait.until(
@@ -33,7 +33,7 @@ public class BasePage  {
         element.click();
     }
 
-    protected void sendKeys(WebElement element, String text) {
+    public void sendKeys(WebElement element, String text) {
         wait.until(
                 ExpectedConditions.visibilityOf(element)
         );
@@ -41,14 +41,14 @@ public class BasePage  {
         element.sendKeys(text);
     }
 
-    protected String getText(WebElement element) {
+    public String getText(WebElement element) {
         wait.until(
                 ExpectedConditions.visibilityOf(element)
         );
         return element.getText();
     }
 
-    protected boolean isDisplayed(WebElement element) {
+    public boolean isDisplayed(WebElement element) {
         try {
             wait.until(
                     ExpectedConditions.visibilityOf(element)
@@ -59,7 +59,7 @@ public class BasePage  {
         }
     }
 
-    protected void waitForPageLoad() {
+    public void waitForPageLoad() {
         wait.until(
                 driver ->
                         ((JavascriptExecutor)driver)
@@ -68,5 +68,31 @@ public class BasePage  {
                                 )
                                 .equals("complete")
         );
+    }
+
+    // added for https://opensource-demo.orangehrmlive.com/
+    public void click(By locator) {
+        WebElement element = wait.until(ExpectedConditions.elementToBeClickable(locator));
+        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", element);
+        element.click();
+    }
+
+    public void sendKeys(By locator, String text) {
+        WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+        element.clear();
+        element.sendKeys(text);
+    }
+
+    public String getText(By locator) {
+        return wait.until(ExpectedConditions.visibilityOfElementLocated(locator)).getText();
+    }
+
+    public boolean isDisplayed(By locator) {
+        try {
+            wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+            return true;
+        } catch (TimeoutException e) {
+            return false;
+        }
     }
 }

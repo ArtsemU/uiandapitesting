@@ -13,28 +13,28 @@ public class AccountClient {
 
     public Response createUser(UserCredentials credentials) {
         return RestAssured.given()
-                .spec(ApiSpec.SPEC)
+                .spec(ApiSpec.spec())
                 .body(credentials)
                 .post("/Account/v1/User");
     }
 
     public Response generateToken(UserCredentials credentials) {
         return RestAssured.given()
-                .spec(ApiSpec.SPEC)
+                .spec(ApiSpec.spec())
                 .body(credentials)
                 .post("/Account/v1/GenerateToken");
     }
 
     public Response getUser(String userId, String token) {
         return RestAssured.given()
-                .spec(ApiSpec.SPEC)
+                .spec(ApiSpec.spec())
                 .header("Authorization", "Bearer " + token)
                 .get("/Account/v1/User/{userId}", userId);
     }
 
     public Response deleteUser(String userId, String token) {
         return RestAssured.given()
-                .spec(ApiSpec.SPEC)
+                .spec(ApiSpec.spec())
                 .header("Authorization", "Bearer " + token)
                 .delete("/Account/v1/User/{userId}", userId);
     }

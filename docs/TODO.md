@@ -41,8 +41,8 @@
 - [x] Browser is hardcoded to `CHROME` — done via `-Dbrowser` system
   property.
 
-- [ ] `api.Config` reads a single `api.properties` with no environment
-  selection. Add a `-Denv` mechanism once a second environment exists;
-  deliberately out of scope while there is only one.
+- [x] `api.Config` reads a single `api.properties` with no environment
+  selection — done: `-Denv=<name>` selects `config/api-<name>.properties`
+  (standalone, no fallback); an unknown name fails at startup.
 - [ ] When re-enabling Grid: refactor createRemoteDriver to accept (Browser, headless)
   like the local path, not a new enum value.

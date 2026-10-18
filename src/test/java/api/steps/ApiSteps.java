@@ -25,7 +25,7 @@ public class ApiSteps {
         this.bookstoreClient = new BookstoreClient(catalogueBaseUrl);
     }
 
-    // Catalogue (getAllBooks) is read from the given base URL; every other call uses api.properties.
+    // Catalogue (getAllBooks) is read from the given base URL; every other call uses the configured base.url (see Config).
     public static ApiSteps withCatalogueBaseUrl(String catalogueBaseUrl) {
         return new ApiSteps(catalogueBaseUrl);
     }
