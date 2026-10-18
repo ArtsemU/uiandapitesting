@@ -14,6 +14,7 @@ public class LoginPage extends BasePage {
     private static final By PASSWORD_FIELD = By.xpath("//input[@name='password']");
     private static final By LOGIN_BUTTON = By.xpath("//button[@type='submit']");
     private static final By ERROR_MESSAGE = By.xpath("//p[contains(@class,'oxd-alert-content-text')]");
+    private static final By ERROR_BLOCK = By.xpath("//div[@class='orangehrm-login-error']");
 
     public LoginPage(WebDriver driver) {
         super(driver);
@@ -37,5 +38,13 @@ public class LoginPage extends BasePage {
 
     public String getErrorMessage() {
         return getText(ERROR_MESSAGE);
+    }
+
+    public boolean isErrorMessageDisplayed() {
+        return isDisplayed(ERROR_MESSAGE);
+    }
+
+    public boolean isErrorBlockDisplayed() {
+        return isDisplayed(ERROR_BLOCK);
     }
 }

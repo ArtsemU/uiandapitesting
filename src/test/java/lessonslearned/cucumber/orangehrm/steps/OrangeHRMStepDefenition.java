@@ -49,7 +49,28 @@ public class OrangeHRMStepDefenition {
 
     @Then("the user sees the dashboard")
     public void theUserSeesTheDashboard() {
+        Assert.assertTrue(dashboard().isDisplayed(), "Dashboard is not displayed after a successful login");
         Assert.assertEquals(dashboard().getPageTitle(), "Dashboard",
                 "Dashboard is not shown after a successful login");
+    }
+
+    @When("the user logs in as {string} with password {string}")
+    public void theUserLogsInAs(String username, String password) {
+        loginPage().fillInUserName(username);
+        loginPage().fillInPassword(password);
+        loginPage().clickLoginButton();
+    }
+
+    @Then("user is navigated to home page")
+    public void userIsNavigatedToHomePage() {
+        Assert.assertEquals(loginPage().getErrorMessage(), "Invalid credentials",
+                "User seens an error mesage - Invalid credentials on Login page");
+    }
+
+    @Then("the user sees the 'Invalid credentials' error")
+    public void theUserSeesTheInvalidCredentialsError() {
+        Assert.assertTrue(loginPage().isErrorBlockDisplayed(), "Error block is not displayed");
+        Assert.assertEquals(loginPage().getErrorMessage(), "Invalid credentials",
+                "User sees an error message - Invalid credentials on Login page");
     }
 }

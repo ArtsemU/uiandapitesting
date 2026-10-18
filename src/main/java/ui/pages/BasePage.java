@@ -87,7 +87,7 @@ public class BasePage  {
         return wait.until(ExpectedConditions.visibilityOfElementLocated(locator)).getText();
     }
 
-    public boolean isDisplayed() {
+    public boolean isDisplayed(By locator) {
         try {
             wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
             return true;
