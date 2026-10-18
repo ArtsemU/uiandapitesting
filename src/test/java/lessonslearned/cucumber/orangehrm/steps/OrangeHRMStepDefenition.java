@@ -1,8 +1,10 @@
 package lessonslearned.cucumber.orangehrm.steps;
 
 import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lessonslearned.cucumber.orangehrm.UiContext;
+import lessonslearned.cucumber.orangehrm.pages.Dashboard;
 import lessonslearned.cucumber.orangehrm.pages.LoginPage;
 
 public class OrangeHRMStepDefenition {
@@ -13,6 +15,7 @@ public class OrangeHRMStepDefenition {
 
     private final UiContext context;
     private LoginPage loginPage;
+    private Dashboard dashboard;
 
 
     public OrangeHRMStepDefenition(UiContext context) {
@@ -29,5 +32,10 @@ public class OrangeHRMStepDefenition {
         loginPage.fillInUserName(VALID_USERNAME);
         loginPage.fillInPassword(VALID_PASSWORD);
         loginPage.clickLoginButton();
+    }
+
+    @Then("the user sees the dashboard")
+    public void theUserSeesTheDashboard() {
+
     }
 }
