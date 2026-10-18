@@ -2,13 +2,18 @@ package lessonslearned.cucumber;
 
 import io.cucumber.java.After;
 import io.cucumber.java.AfterAll;
-import io.cucumber.java.AfterStep;
 import io.cucumber.java.Before;
 import io.cucumber.java.BeforeAll;
-import io.cucumber.java.BeforeStep;
 import io.cucumber.java.Scenario;
+import lessonslearned.cucumber.orangehrm.UiContext;
 
 public class Hooks {
+
+    private final UiContext context;
+
+    public Hooks(UiContext context) {
+        this.context = context;
+    }
 
     @BeforeAll
     public static void beforeAll() {
@@ -31,13 +36,5 @@ public class Hooks {
                 + " — status: " + scenario.getStatus());
     }
 
-    @BeforeStep
-    public void beforeStep() {
-        System.out.println(">>> BeforeStep");
-    }
 
-    @AfterStep
-    public void afterStep() {
-        System.out.println(">>> AfterStep");
-    }
 }
