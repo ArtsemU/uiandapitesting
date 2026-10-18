@@ -7,26 +7,35 @@ import org.slf4j.LoggerFactory;
 import ui.pages.BasePage;
 
 public class LoginPage extends BasePage {
-    private static final Logger log = LoggerFactory.getLogger(LoginPage.class);
 
-    private final String loginField = "//input[@placeholder= 'Username']";
-    private final String passwordField = "//input[@name= 'password']";
-    private final String loginButton = "//button[@type= 'submit']";
+    private static final String URL = "https://opensource-demo.orangehrmlive.com/";
 
+    private static final By USERNAME_FIELD = By.xpath("//input[@name='username']");
+    private static final By PASSWORD_FIELD = By.xpath("//input[@name='password']");
+    private static final By LOGIN_BUTTON = By.xpath("//button[@type='submit']");
+    private static final By ERROR_MESSAGE = By.xpath("//p[contains(@class,'oxd-alert-content-text')]");
 
     public LoginPage(WebDriver driver) {
         super(driver);
     }
 
+    public void open() {
+        driver.get(URL);
+    }
+
     public void fillInUserName(String username) {
-        sendKeys(driver.findElement(By.xpath(loginField)), username);
+        sendKeys(USERNAME_FIELD, username);
     }
 
     public void fillInPassword(String password) {
-        sendKeys(driver.findElement(By.xpath(passwordField)), password);
+        sendKeys(PASSWORD_FIELD, password);
     }
 
     public void clickLoginButton() {
-        click(driver.findElement(By.xpath(loginButton)));
+        click(LOGIN_BUTTON);
+    }
+
+    public String getErrorMessage() {
+        return getText(ERROR_MESSAGE);
     }
 }
