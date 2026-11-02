@@ -45,6 +45,17 @@ Tests call Steps only, never Pages directly.
 - Objects built through a builder are passed whole. Never unpack them into
   positional parameters at a layer boundary.
 
+### Exceptions
+
+- Custom exceptions only where a standard one cannot name the cause. The
+  only one in this project is `ConfigException` (unchecked, next to
+  `api.Config`), thrown for configuration errors: unknown environment,
+  missing or blank required key, invalid boolean value. Its message names
+  the key or the environment and the file.
+- Do not add new custom exceptions without asking.
+- Tests report failures through assertions, not exceptions. Pages and Steps
+  let Selenium and RestAssured exceptions propagate without wrapping them.
+
 ### Where things go
 
 `src/main/java`:

@@ -13,7 +13,7 @@ import java.util.Properties;
  * property overrides the selected file.
  *
  * <p>Loaded lazily, not in a static initializer: a bad -Denv then surfaces as a plain
- * IllegalStateException ("unknown environment ...") on every access, instead of an
+ * ConfigException ("unknown environment ...") on every access, instead of an
  * ExceptionInInitializerError followed by NoClassDefFoundErrors that hide the message.
  */
 public final class Config {
@@ -67,13 +67,13 @@ public final class Config {
         Properties props = new Properties();
         try (InputStream in = Config.class.getClassLoader().getResourceAsStream(file)) {
             if (in == null) {
-                throw new IllegalStateException(envSet
+                throw new ConfigException(envSet
                         ? "unknown environment " + env.trim() + " (no " + file + " on the classpath)"
                         : "Config file not found on classpath: " + file);
             }
             props.load(in);
         } catch (IOException e) {
-            throw new IllegalStateException("Failed to read config file: " + file, e);
+            throw new ConfigException("Failed to read config file: " + file, e);
         }
         configFile = file;
         log.info("API environment: {}, base.url: {}", envSet ? env.trim() : "default",
@@ -92,7 +92,7 @@ public final class Config {
         String value = valueOf(properties(), key);
 
         if (value == null || value.isBlank()) {
-            throw new IllegalStateException("Missing required key '" + key + "' in " + configFile);
+            throw new ConfigException("Missing or empty required key '" + key + "' in " + configFile);
         }
 
         return value;
@@ -108,6 +108,6 @@ public final class Config {
         if (value.equalsIgnoreCase("false")) {
             return false;
         }
-        throw new IllegalStateException("Invalid value '" + value + "' for key '" + key + "': expected true or false");
+        throw new ConfigException("Invalid value '" + value + "' for key '" + key + "': expected true or false");
     }
 }
