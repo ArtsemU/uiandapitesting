@@ -6,5 +6,9 @@ public class BaseSteps {
 
     public static final String LOGIN_URL = "https://opensource-demo.orangehrmlive.com/web/index.php/auth/login";
 
-    Page page;
+    protected final Page page;
+
+    protected BaseSteps(Page page) {
+        this.page = page;
+    }
 }
