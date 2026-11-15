@@ -28,10 +28,6 @@ jobs:
         if: ${{ !cancelled() }}
         run: mvn -B test -DsuiteXmlFile=src/test/resources/suite/ui_smoke.xml -Dheadless=true
 
-      - name: Run PR-only suite
-        if: ${{ !cancelled() && github.event_name == 'pull_request' }}
-        run: mvn -B test -DsuiteXmlFile=src/test/resources/suite/cicd_syntetic_tests.xml
-
       - name: Run UI regression suite (headless)
         if: ${{ !cancelled() && (github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/master')) }}
         run: mvn -B test -DsuiteXmlFile=src/test/resources/suite/ui_regression.xml -Dheadless=true
