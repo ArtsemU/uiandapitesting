@@ -128,7 +128,7 @@ Confluence is read-only. Never create, update or delete pages there.
 - Anything longer than a few lines goes to a file, not the chat, unless the
   prompt asks for the chat.
 - One-off analysis, comparisons and audits go to `reports/` as
-  `report_<topic>_<YYYY-MM-DD-HH-MM>.md` and are kept. Documents meant to be kept
+  `report_<YYYY-MM-DD>_<topic>.md` and are kept. Documents meant to be kept
   live in `docs/`.
 - After a task, the summary in the chat has at most 10 lines, one line per
   item, in plain words: what was done, test result, what went wrong,
