@@ -112,18 +112,16 @@ Confluence is read-only. Never create, update or delete pages there.
 - Remove scratch files, draft implementations and debug fragments before a task
   is done.
 
-### Sandbox and lessons-learned packages
+### Sandbox package
 
-- `src/test/java/sandbox` (experiments) and `src/test/java/lessonslearned`
-  (exercises based on interview feedback) are not held to this file's rules,
-  unless a prompt explicitly asks for them. Do not refactor, restyle or "fix"
-  code there, and leave both out of repo-wide changes, reviews and audits.
+- `src/test/java/sandbox` (experiments) is not held to this file's rules,
+  unless a prompt explicitly asks for it. Do not refactor, restyle or "fix"
+  code there, and leave it out of repo-wide changes, reviews and audits.
 - Exception: if a change elsewhere breaks compilation there, make the minimal fix
   that keeps it compiling and say so — a compile error there breaks every
   `mvn test` run.
-- Their suite XMLs live under `src/test/resources/suite/`; `lessonslearned`
-  suites are not wired into CI. Both packages stay in the repo by design; the
-  Cleanup rule does not apply to them.
+- The package stays in the repo by design; the Cleanup rule does not apply
+  to it.
 
 ### Generated output
 
