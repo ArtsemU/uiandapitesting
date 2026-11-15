@@ -133,7 +133,7 @@ public class WebTablesPage extends BasePage {
     }
 
     public void fillRecordForm(WebTableRecord record) {
-        WebElement modal = driver.findElement(modalContainer);
+        WebElement modal = waitForVisible(modalContainer);
 
         WebElement firstName = modal.findElement(firstNameField);
         clearField(firstName);
@@ -161,17 +161,23 @@ public class WebTablesPage extends BasePage {
     }
 
     public void clickSubmit() {
-        WebElement modal = driver.findElement(modalContainer);
+        WebElement modal = waitForVisible(modalContainer);
         click(modal.findElement(submitButton));
+        // the modal fades out; until it is gone it covers the table and
+        // intercepts the next click (e.g. the Edit icon)
+        waitForInvisible(modalContainer);
     }
 
     public void clickClose() {
-        WebElement modal = driver.findElement(modalContainer);
+        WebElement modal = waitForVisible(modalContainer);
         click(modal.findElement(closeButton));
+        waitForInvisible(modalContainer);
     }
 
     public WebTableRecord getRecordByEmail(String email) {
         WebElement table = driver.findElement(tableContainer);
+        // the row is re-rendered after the modal is submitted
+        waitForVisible(table, rowByEmail(email));
         List<WebElement> matches = table.findElements(rowByEmail(email));
         if (matches.size() != 1) {
             throw new IllegalStateException(

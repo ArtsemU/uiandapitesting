@@ -20,16 +20,21 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
+      # Every suite after the first runs even if an earlier one failed;
+      # a failed step still fails the job.
       - name: Run UI regression suite (headless)
         run: mvn -B test -DsuiteXmlFile=src/test/resources/suite/ui_regression.xml -Dheadless=true
 
       - name: Run API parallel testing suite
+        if: ${{ !cancelled() }}
         run: mvn -B test -DsuiteXmlFile=src/test/resources/suite/api-parallel-testng.xml
 
       - name: Run API parallel testing suite with catalogue stubs (WireMock + Mockito)
+        if: ${{ !cancelled() }}
         run: mvn -B test -DsuiteXmlFile=src/test/resources/suite/api-parallel-testng.xml -Dstub.catalogue.wiremock=true -Dstub.catalogue.mockito=true
 
       - name: Run BDD parallel suite (headless)
+        if: ${{ !cancelled() }}
         run: mvn -B test -DsuiteXmlFile=src/test/resources/suite/bdd_parallel.xml -Dheadless=true
 
       # Report and upload run even when a test step failed; the job still fails on test failures.

@@ -41,17 +41,18 @@ public class CheckBoxPage extends BasePage {
 
     public void expandNode(String label) {
         WebElement tree = driver.findElement(treeContainer);
-        click(tree.findElement(switcherForLabel(label)));
+        // a child node only appears once its parent has been expanded
+        click(waitForVisible(tree, switcherForLabel(label)));
     }
 
     public void selectItem(String label) {
         WebElement tree = driver.findElement(treeContainer);
-        click(tree.findElement(checkboxForLabel(label)));
+        click(waitForVisible(tree, checkboxForLabel(label)));
     }
 
     public List<String> getSelectedItems() {
-        WebElement result = driver.findElement(resultContainer);
-        isDisplayed(result);
+        // the result block is rendered only after a checkbox is selected
+        WebElement result = waitForVisible(resultContainer);
         return result.findElements(selectedResultItems).stream()
                 .map(WebElement::getText)
                 .collect(Collectors.toList());
