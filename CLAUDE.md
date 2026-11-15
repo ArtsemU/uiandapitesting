@@ -112,23 +112,12 @@ Confluence is read-only. Never create, update or delete pages there.
 - Remove scratch files, draft implementations and debug fragments before a task
   is done.
 
-### Sandbox package
-
-- `src/test/java/sandbox` (experiments) is not held to this file's rules,
-  unless a prompt explicitly asks for it. Do not refactor, restyle or "fix"
-  code there, and leave it out of repo-wide changes, reviews and audits.
-- Exception: if a change elsewhere breaks compilation there, make the minimal fix
-  that keeps it compiling and say so — a compile error there breaks every
-  `mvn test` run.
-- The package stays in the repo by design; the Cleanup rule does not apply
-  to it.
-
 ### Generated output
 
 - Anything longer than a few lines goes to a file, not the chat, unless the
   prompt asks for the chat.
 - One-off analysis, comparisons and audits go to `reports/` as
-  `report_<topic>_<YYYY-MM-DD-HH-MM>.md` and are kept. Documents meant to be kept
+  `report_<YYYY-MM-DD>_<topic>.md` and are kept. Documents meant to be kept
   live in `docs/`.
 - After a task, the summary in the chat has at most 10 lines, one line per
   item, in plain words: what was done, test result, what went wrong,

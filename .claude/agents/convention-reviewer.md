@@ -17,7 +17,6 @@ Follow these steps in order.
      and `git status --porcelain` to find new untracked files.
    - If the request names specific files, review those files in full
      instead of the diff.
-   - Skip anything under src/test/java/sandbo.
 2. Read the rules. Read CLAUDE.md and, for each file under review, every
    file in .claude/rules/ that covers it. Read them directly, even if they
    were already loaded, so you can quote them exactly. Do not review from
