@@ -59,6 +59,27 @@ public class BasePage  {
         }
     }
 
+    // for lookups right after an action that opens, expands or re-renders
+    // part of the page: waits until the element is in the DOM and visible
+    public WebElement waitForVisible(By locator) {
+        return wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+    }
+
+    // same, scoped to a container; a missing element is retried, because
+    // WebDriverWait ignores NotFoundException while polling
+    public WebElement waitForVisible(WebElement container, By locator) {
+        return wait.until(d -> {
+            WebElement element = container.findElement(locator);
+            return element.isDisplayed() ? element : null;
+        });
+    }
+
+    // for actions right after something closes (a modal): waits until the
+    // element is hidden or gone from the DOM
+    public void waitForInvisible(By locator) {
+        wait.until(ExpectedConditions.invisibilityOfElementLocated(locator));
+    }
+
     public void waitForPageLoad() {
         wait.until(
                 driver ->

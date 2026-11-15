@@ -68,20 +68,20 @@ public class TextBoxPage extends BasePage{
         return text.substring(separatorIndex + 1).trim();
     }
 
-    // get text methods
+    // get text methods - the output block is rendered only after submit
     public String getFullName() {
-        return parseOutputValue("Full Name", getText(driver.findElement(outputName)));
+        return parseOutputValue("Full Name", getText(waitForVisible(outputName)));
     }
 
     public String getEmail() {
-        return parseOutputValue("Email", getText(driver.findElement(outputEmail)));
+        return parseOutputValue("Email", getText(waitForVisible(outputEmail)));
     }
 
     public String getCurrentAddress() {
-        return parseOutputValue("Current Address", getText(driver.findElement(outputCurrentAddress)));
+        return parseOutputValue("Current Address", getText(waitForVisible(outputCurrentAddress)));
     }
 
     public String getPermanentAddress() {
-        return parseOutputValue("Permanent Address", getText(driver.findElement(outputPermanentAddress)));
+        return parseOutputValue("Permanent Address", getText(waitForVisible(outputPermanentAddress)));
     }
 }

@@ -19,8 +19,12 @@ it opens a UI file.
   assertions. Element interaction goes through the `BasePage` helpers, not
   `WebElement` methods directly, so waits stay consistent. A direct `WebElement`
   call is allowed only with a code comment explaining why no helper fits (e.g.
-  the React-controlled input in `WebTablesPage.clearField`). Locating elements
-  with `findElement` / `findElements` is not interaction and is fine.
+  the React-controlled input in `WebTablesPage.clearField`).
+- Locating elements with `findElement` / `findElements` is not interaction and
+  needs no helper. Exception: a lookup right after an action that opens or
+  expands part of the page (a modal, a tree node) must first wait for that
+  element through a `BasePage` helper; an action right after something closes
+  (a modal) must first wait for it to disappear. No implicit waits.
 - Steps compose page objects into business-level actions and own SLF4J logging.
   No assertions, no `By` or `WebElement`. Steps hold the `WebDriver` only to
   build page objects; opening a URL goes through `BaseSteps.openUrl`.
